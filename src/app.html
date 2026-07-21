@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+		<meta name="text-scale" content="scale" />
+
+		<!-- PWA manifest is injected by vite-plugin-pwa -->
+		<meta name="theme-color" content="#0b0f17" />
+		<link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+		<link rel="apple-touch-icon" href="/icons/icon-192.png" />
+		<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+		<link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
+
+		<!-- iOS standalone -->
+		<meta name="apple-mobile-web-app-capable" content="yes" />
+		<meta name="mobile-web-app-capable" content="yes" />
+		<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+		<meta name="apple-mobile-web-app-title" content="Spendy" />
+		<meta name="application-name" content="Spendy" />
+
+		<!-- Open Graph -->
+		<meta property="og:title" content="SpendyTrack" />
+		<meta property="og:description" content="Personal spending tracker PWA." />
+
+		%sveltekit.head%
+	</head>
+	<body data-sveltekit-preload-data="hover">
+		<div style="display: contents">%sveltekit.body%</div>
+	</body>
+</html>
