@@ -222,12 +222,24 @@
 
 			<section class="step center-vert">
 				<div class="step-title">Pilih jenis transaksi</div>
-				<SegmentedControl
-					options={[{ value: 'expense', label: 'Pengeluaran' }, { value: 'income', label: 'Pemasukan' }]}
-					value={jenis}
-					onchange={pickJenis}
-					size="md"
-				/>
+				<div class="jenis-cards">
+					<button
+						class="jenis-card expense"
+						class:selected={jenis === 'expense'}
+						onclick={() => pickJenis('expense')}
+					>
+						<span class="jenis-icon"><Icon name="arrow-down-right" size={28} /></span>
+						<span class="jenis-label">Pengeluaran</span>
+					</button>
+					<button
+						class="jenis-card income"
+						class:selected={jenis === 'income'}
+						onclick={() => pickJenis('income')}
+					>
+						<span class="jenis-icon"><Icon name="arrow-up-right" size={28} /></span>
+						<span class="jenis-label">Pemasukan</span>
+					</button>
+				</div>
 				<div class="jenis-hint">Pilih salah satu untuk lanjut</div>
 			</section>
 
@@ -362,6 +374,44 @@
 		color: var(--text-2);
 		text-align: center;
 		max-width: 260px;
+	}
+	.jenis-cards {
+		display: flex;
+		gap: 14px;
+		width: 100%;
+		max-width: 340px;
+	}
+	.jenis-card {
+		flex: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 14px;
+		padding: 28px 16px;
+		border-radius: var(--r-lg);
+		border: 2px solid var(--border);
+		background: transparent;
+		color: var(--text-2);
+		transition: all 0.25s ease;
+		-webkit-tap-highlight-color: transparent;
+	}
+	.jenis-card:active {
+		transform: scale(0.97);
+	}
+	.jenis-card.expense.selected {
+		border-color: var(--red);
+		background: var(--red);
+		color: #fff;
+	}
+	.jenis-card.income.selected {
+		border-color: var(--green);
+		background: var(--green);
+		color: #fff;
+	}
+	.jenis-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 	.grid {
 		display: grid;
