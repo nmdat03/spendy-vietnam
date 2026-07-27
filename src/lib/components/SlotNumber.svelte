@@ -4,7 +4,8 @@
 	// settling on the target digit. Separators, currency symbols and the minus
 	// sign stay static — only digits animate. Respects prefers-reduced-motion.
 	import { onDestroy } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { splitAmount } from '$lib/format/currency';
 
 	interface Props {
@@ -67,7 +68,6 @@
 	}
 	const strips = $derived(chars.map((c) => (c.spin ? stripFor(c.ch) : null)));
 
-	const reduced = prefersReducedMotion();
 	let containers: (HTMLElement | null)[] = $state([]);
 	let reels: (HTMLElement | null)[] = $state([]);
 	let digitH = 0;
@@ -78,7 +78,7 @@
 	}
 
 	function spin() {
-		if (reduced) return;
+		if (motionReduced()) return;
 		measure();
 		const h = digitH || 1;
 		chars.forEach((char, i) => {
@@ -113,6 +113,12 @@
 		return () => cancelAnimationFrame(id);
 	});
 
+	// Kill active spins immediately when reduce-motion is toggled on mid-animation.
+	$effect(() => {
+		motionReduced();
+		gsap.killTweensOf(reels.filter(Boolean) as HTMLElement[]);
+	});
+
 	onDestroy(() => {
 		gsap.killTweensOf(reels.filter(Boolean) as HTMLElement[]);
 	});
@@ -123,7 +129,7 @@
 		{#if char.spin}
 			<span class="col" bind:this={containers[i]} aria-hidden="true">
 				<span class="reel" bind:this={reels[i]}>
-					{#if reduced}
+					{#if motionReduced()}
 						<span class="digit">{char.ch}</span>
 					{:else}
 						{#each strips[i]?.strip ?? [] as d, di (`${i}-${di}`)}

@@ -2,7 +2,8 @@
 	// SegmentedControl: pill-style 2-option switch (e.g. Pemasukan/Pengeluaran,
 	// Money in/Money spent). Active option morphs to a dark pill.
 	import { onMount } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 
 	interface Option<T extends string> {
 		value: T;
@@ -17,13 +18,12 @@
 	let { options, value, onchange, size = 'md' }: Props<string> = $props();
 
 	let thumb = $state<HTMLDivElement | null>(null);
-	const reduced = prefersReducedMotion();
 
 	$effect(() => {
 		value;
 		const target = document.querySelector<HTMLElement>(`[data-seg="${value}"]`);
 		if (!target || !thumb) return;
-		if (reduced) {
+		if (motionReduced()) {
 			gsap.set(thumb, { left: target.offsetLeft, width: target.offsetWidth });
 			return;
 		}

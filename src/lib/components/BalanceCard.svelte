@@ -3,7 +3,8 @@
 	// via SlotNumber, period change chips, a period selector (7D/30D/90D/1Y) and
 	// a combined thin-bars + line trend chart.
 	import { onMount } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import SlotNumber from './SlotNumber.svelte';
 
 	interface TrendPoint {
@@ -31,7 +32,6 @@
 		changeDown = 0
 	}: Props = $props();
 
-	const reduced = prefersReducedMotion();
 	let open = $state(false);
 	let linePath = $state<SVGPathElement | null>(null);
 
@@ -51,15 +51,19 @@
 	const lineD = $derived.by(() => {
 		const n = trend.length;
 		if (n === 0) return '';
-		return trend.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(i, n).toFixed(1)} ${y(p.value).toFixed(1)}`).join(' ');
+		return trend
+			.map((p, i) => `${i === 0 ? 'M' : 'L'} ${x(i, n).toFixed(1)} ${y(p.value).toFixed(1)}`)
+			.join(' ');
 	});
 	const areaD = $derived(
-		trend.length ? `${lineD} L ${x(trend.length - 1, trend.length)} ${H} L ${x(0, trend.length)} ${H} Z` : ''
+		trend.length
+			? `${lineD} L ${x(trend.length - 1, trend.length)} ${H} L ${x(0, trend.length)} ${H} Z`
+			: ''
 	);
 
 	$effect(() => {
 		lineD;
-		if (!linePath || reduced) return;
+		if (!linePath || motionReduced()) return;
 		const len = linePath.getTotalLength();
 		gsap.fromTo(
 			linePath,
@@ -75,13 +79,32 @@
 	<div class="head">
 		<span class="label">Total Balance</span>
 		<div class="period">
-			<button class="period-btn" onclick={() => (open = !open)} aria-haspopup="true" aria-expanded={open}>
-				{period}<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg>
+			<button
+				class="period-btn"
+				onclick={() => (open = !open)}
+				aria-haspopup="true"
+				aria-expanded={open}
+			>
+				{period}<svg
+					width="12"
+					height="12"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="currentColor"
+					stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg
+				>
 			</button>
 			{#if open}
 				<div class="period-menu" role="menu">
 					{#each periods as p (p)}
-						<button class:sel={p === period} onclick={() => { onPeriodChange(p); open = false; }} role="menuitem">{p}</button>
+						<button
+							class:sel={p === period}
+							onclick={() => {
+								onPeriodChange(p);
+								open = false;
+							}}
+							role="menuitem">{p}</button
+						>
 					{/each}
 				</div>
 			{/if}
@@ -94,11 +117,33 @@
 
 	<div class="chips">
 		<span class="chip up">
-			<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+			<svg
+				width="11"
+				height="11"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"
+				></polyline></svg
+			>
 			{changeUp > 0 ? '+' : ''}{changeUp.toFixed(1)}%
 		</span>
 		<span class="chip down">
-			<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="7" x2="17" y2="17"></line><polyline points="17 7 17 17 7 17"></polyline></svg>
+			<svg
+				width="11"
+				height="11"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+				><line x1="7" y1="7" x2="17" y2="17"></line><polyline points="17 7 17 17 7 17"
+				></polyline></svg
+			>
 			{changeDown > 0 ? '-' : ''}{changeDown.toFixed(1)}%
 		</span>
 	</div>
@@ -112,10 +157,25 @@
 				</linearGradient>
 			</defs>
 			{#each trend as p, i (i)}
-				<rect x={x(i, trend.length) - 3} y={y(p.value)} width="6" height={H - y(p.value)} rx="2" fill="var(--surface-2)"></rect>
+				<rect
+					x={x(i, trend.length) - 3}
+					y={y(p.value)}
+					width="6"
+					height={H - y(p.value)}
+					rx="2"
+					fill="var(--surface-2)"
+				></rect>
 			{/each}
 			<path d={areaD} fill="url(#trendArea)"></path>
-			<path bind:this={linePath} d={lineD} fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>
+			<path
+				bind:this={linePath}
+				d={lineD}
+				fill="none"
+				stroke="var(--blue)"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			></path>
 		</svg>
 	</div>
 </div>
@@ -123,7 +183,12 @@
 <style>
 	.balance {
 		padding: 20px 22px 18px;
-		background: linear-gradient(180deg, var(--surface), var(--surface) 60%, color-mix(in srgb, var(--blue) 4%, var(--surface)));
+		background: linear-gradient(
+			180deg,
+			var(--surface),
+			var(--surface) 60%,
+			color-mix(in srgb, var(--blue) 4%, var(--surface))
+		);
 	}
 	.head {
 		display: flex;

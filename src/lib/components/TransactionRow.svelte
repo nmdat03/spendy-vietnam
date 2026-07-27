@@ -29,13 +29,26 @@
 	}
 </script>
 
-<div class="row" role="button" tabindex="0" onclick={() => onSelect?.(tx)} onkeydown={(e) => e.key === 'Enter' && onSelect?.(tx)}>
+<div
+	class="row"
+	role="button"
+	tabindex="0"
+	onclick={() => onSelect?.(tx)}
+	onkeydown={(e) => e.key === 'Enter' && onSelect?.(tx)}
+>
 	<span class="avatar" style="--c: {category?.color ?? '#6b7280'}">
-		<Icon name={category?.icon ?? 'circle-ellipsis'} size={18} color={category?.color ?? '#6b7280'} />
+		<Icon
+			name={category?.icon ?? 'circle-ellipsis'}
+			size={18}
+			color={category?.color ?? '#6b7280'}
+		/>
 	</span>
 	<span class="meta">
 		<span class="name">{tx.note || category?.name || 'Tanpa nama'}</span>
-		<span class="sub">{category?.name ?? 'Uncategorized'} · {timeLabel} · <span class="acc-tag {tx.account ?? 'cash'}">{accountLabel}</span></span>
+		<span class="sub"
+			>{category?.name ?? 'Uncategorized'} · {timeLabel} ·
+			<span class="acc-tag {tx.account ?? 'cash'}">{accountLabel}</span></span
+		>
 	</span>
 	<span class="amount" class:income={tx.type === 'income'} class:expense={tx.type === 'expense'}>
 		{tx.type === 'income' ? '+' : '−'}{formatCurrency(Math.abs(tx.amount), currency)}

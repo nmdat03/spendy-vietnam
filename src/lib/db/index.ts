@@ -13,7 +13,8 @@ export class SpendyDB extends Dexie {
 	constructor() {
 		super('spendy-track');
 		this.version(1).stores({
-			transactions: '++id, type, categoryId, amount, currency, date, createdAt, updatedAt, syncStatus',
+			transactions:
+				'++id, type, categoryId, amount, currency, date, createdAt, updatedAt, syncStatus',
 			categories: '++id, type, name, order',
 			settings: 'key',
 			syncQueue: '++id, entity, entityId, operation, createdAt'
@@ -40,7 +41,9 @@ export async function ensureSeed(): Promise<void> {
 
 // ---- Transaction CRUD ----------------------------------------------------
 
-export async function addTransaction(tx: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt' | 'syncStatus'>): Promise<number> {
+export async function addTransaction(
+	tx: Omit<Transaction, 'id' | 'createdAt' | 'updatedAt' | 'syncStatus'>
+): Promise<number> {
 	const now = new Date().toISOString();
 	const id = await db.transactions.add({
 		...tx,
@@ -84,14 +87,16 @@ export async function deleteCategory(id: number, moveToCategoryId?: number): Pro
 		await db.transactions.bulkPut(
 			affected.map((t) => ({ ...t, categoryId: moveToCategoryId, syncStatus: 'pending' as const }))
 		);
-		for (const t of affected) await enqueueSync('transaction', t.id!, 'update', { ...t, categoryId: moveToCategoryId });
+		for (const t of affected)
+			await enqueueSync('transaction', t.id!, 'update', { ...t, categoryId: moveToCategoryId });
 	} else {
 		// Mark orphaned transactions as Uncategorized (categoryId = 0)
 		const affected = await db.transactions.where('categoryId').equals(id).toArray();
 		await db.transactions.bulkPut(
 			affected.map((t) => ({ ...t, categoryId: 0, syncStatus: 'pending' as const }))
 		);
-		for (const t of affected) await enqueueSync('transaction', t.id!, 'update', { ...t, categoryId: 0 });
+		for (const t of affected)
+			await enqueueSync('transaction', t.id!, 'update', { ...t, categoryId: 0 });
 	}
 	await db.categories.delete(id);
 	await enqueueSync('category', id, 'delete', { id });

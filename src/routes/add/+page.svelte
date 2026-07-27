@@ -9,7 +9,8 @@
 	//   Step 1 Nominal → Step 2 Jenis → Step 3 Kategori → Step 4 Waktu & Review.
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { liveQuery } from 'dexie';
 	import { db, addTransaction } from '$lib/db';
 	import { settings } from '$lib/state/settings.svelte';
@@ -20,8 +21,6 @@
 	import CategoryChip from '$lib/components/CategoryChip.svelte';
 	import SlotNumber from '$lib/components/SlotNumber.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-
-	const reduced = prefersReducedMotion();
 
 	let step = $state(0); // 0..3
 	const stepTitles = ['Nominal', 'Jenis', 'Kategori', 'Waktu & Catatan'];
@@ -69,7 +68,7 @@
 		if (!track) return;
 		// Track is 400% wide (4 steps x 25% each), so one step = 25% of the track's
 		// own width. xPercent is relative to the element's width, hence -step * 25.
-		if (reduced) {
+		if (motionReduced()) {
 			gsap.set(track, { xPercent: -step * 25 });
 			return;
 		}
@@ -91,7 +90,7 @@
 
 	function selectCategory(c: Category) {
 		categoryId = c.id!;
-		if (reduced) {
+		if (motionReduced()) {
 			step = 3;
 			return;
 		}
@@ -103,7 +102,7 @@
 	function pickJenis(v: string) {
 		jenis = v as TxType;
 		categoryId = null;
-		if (reduced) {
+		if (motionReduced()) {
 			step = 2;
 			return;
 		}
@@ -115,7 +114,7 @@
 	let gridEl = $state<HTMLElement | null>(null);
 	$effect(() => {
 		step;
-		if (step === 2 && gridEl && !reduced) {
+		if (step === 2 && gridEl && !motionReduced()) {
 			const id = requestAnimationFrame(() => {
 				gsap.from(gridEl!.querySelectorAll('.chip'), {
 					y: 14,
@@ -132,7 +131,7 @@
 	let reviewEl = $state<HTMLElement | null>(null);
 	$effect(() => {
 		step;
-		if (step === 3 && reviewEl && !reduced) {
+		if (step === 3 && reviewEl && !motionReduced()) {
 			const id = requestAnimationFrame(() => {
 				gsap.from(reviewEl, { y: 18, opacity: 0, duration: 0.5, ease: EASES.out });
 			});
@@ -158,16 +157,16 @@
 		});
 		await new Promise((r) => setTimeout(r, 350));
 		phase = 'done';
-	if (submitBtn && !reduced) {
-		gsap.fromTo(
-			submitBtn,
-			{ scale: 0.7, opacity: 0.5 },
-			{ scale: 1, opacity: 1, duration: 0.5, ease: EASES.outBack }
-		);
+		if (submitBtn && !motionReduced()) {
+			gsap.fromTo(
+				submitBtn,
+				{ scale: 0.7, opacity: 0.5 },
+				{ scale: 1, opacity: 1, duration: 0.5, ease: EASES.outBack }
+			);
+		}
+		await new Promise((r) => setTimeout(r, 900));
+		close();
 	}
-	await new Promise((r) => setTimeout(r, 900));
-	close();
-}
 
 	onDestroy(() => {
 		gsap.killTweensOf([track, gridEl, reviewEl, submitBtn].filter(Boolean) as HTMLElement[]);
@@ -264,7 +263,11 @@
 					</div>
 					<div class="review-meta">
 						<span class="pill" style="--c: {selectedCat?.color ?? '#94a3b8'}">
-							<Icon name={selectedCat?.icon ?? 'circle-ellipsis'} size={14} color={selectedCat?.color ?? '#94a3b8'} />
+							<Icon
+								name={selectedCat?.icon ?? 'circle-ellipsis'}
+								size={14}
+								color={selectedCat?.color ?? '#94a3b8'}
+							/>
 							{selectedCat?.name ?? 'Uncategorized'}
 						</span>
 						<span class="pill-type">{jenis === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
@@ -275,7 +278,10 @@
 				<div class="field full">
 					<span class="flabel">Akun</span>
 					<SegmentedControl
-						options={[{ value: 'cash', label: 'Cash' }, { value: 'debit', label: 'Debit' }]}
+						options={[
+							{ value: 'cash', label: 'Cash' },
+							{ value: 'debit', label: 'Debit' }
+						]}
 						value={account}
 						onchange={(v) => (account = v as Account)}
 						size="sm"
@@ -285,11 +291,21 @@
 				<div class="field-row">
 					<label class="field">
 						<span class="flabel">Tanggal</span>
-						<input class="finput" type="date" value={datePart} oninput={(e) => onDate(e.currentTarget.value)} />
+						<input
+							class="finput"
+							type="date"
+							value={datePart}
+							oninput={(e) => onDate(e.currentTarget.value)}
+						/>
 					</label>
 					<label class="field">
 						<span class="flabel">Jam</span>
-						<input class="finput" type="time" value={timePart} oninput={(e) => onTime(e.currentTarget.value)} />
+						<input
+							class="finput"
+							type="time"
+							value={timePart}
+							oninput={(e) => onTime(e.currentTarget.value)}
+						/>
 					</label>
 				</div>
 				<label class="field full">
@@ -315,7 +331,16 @@
 					Menyimpan…
 				{:else}
 					<span class="ok">
-						<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+						<svg
+							width="20"
+							height="20"
+							viewBox="0 0 24 24"
+							fill="none"
+							stroke="currentColor"
+							stroke-width="3"
+							stroke-linecap="round"
+							stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg
+						>
 						Tersimpan
 					</span>
 				{/if}
@@ -336,7 +361,9 @@
 		height: 6px;
 		border-radius: 999px;
 		background: var(--border);
-		transition: background 0.3s ease, width 0.3s ease;
+		transition:
+			background 0.3s ease,
+			width 0.3s ease;
 	}
 	.dot.active {
 		background: var(--blue);

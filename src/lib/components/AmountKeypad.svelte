@@ -1,7 +1,8 @@
 <script lang="ts">
 	// AmountKeypad: large calculator-style keypad for Step 1 of the Add flow.
 	// Digits pop in on tap. Live-formats the amount per the active currency.
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { currencySymbol } from '$lib/format/currency';
 
 	interface Props {
@@ -12,7 +13,6 @@
 	}
 	let { value, currency, allowDecimal, onchange }: Props = $props();
 
-	const reduced = prefersReducedMotion();
 	let lastPressed = $state<string>('');
 
 	// Display value formatted with thousand separators.
@@ -28,7 +28,7 @@
 	}
 
 	function pop(el: EventTarget | null) {
-		if (!el || reduced) return;
+		if (!el || motionReduced()) return;
 		const target = el as HTMLElement;
 		gsap.fromTo(
 			target,
@@ -80,7 +80,16 @@
 		{/if}
 		<button class="key" onclick={(e) => press('0', e)} aria-label="0">0</button>
 		<button class="key aux" onclick={(e) => backspace(e)} aria-label="Hapus">
-			<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<svg
+				width="22"
+				height="22"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="2"
+				stroke-linecap="round"
+				stroke-linejoin="round"
+			>
 				<path d="M21 4H8L2 12l6 8h13a2 2 0 0 0 2-2V6a2 2 0 0 0-2-2z"></path>
 				<line x1="18" y1="9" x2="12" y2="15"></line>
 				<line x1="12" y1="9" x2="18" y2="15"></line>

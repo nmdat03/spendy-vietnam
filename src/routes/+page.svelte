@@ -1,7 +1,8 @@
 <script lang="ts">
 	// Dashboard (Home). Reactive to IndexedDB via createMonthData().
 	import { onMount } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { settings } from '$lib/state/settings.svelte';
 	import { activeMonth } from '$lib/state/month.svelte';
 	import { createMonthData } from '$lib/state/monthData.svelte';
@@ -16,7 +17,6 @@
 	import type { Transaction } from '$lib/db/schema';
 
 	const data = createMonthData();
-	const reduced = prefersReducedMotion();
 
 	let period = $state('30D');
 	const periods = ['7D', '30D', '90D', '1Y'];
@@ -31,9 +31,7 @@
 		const days = periodDays[period] ?? 30;
 		const now = Date.now();
 		const start = now - days * 86400_000;
-		const all = [...data.allTransactions].sort(
-			(a, b) => +new Date(a.date) - +new Date(b.date)
-		);
+		const all = [...data.allTransactions].sort((a, b) => +new Date(a.date) - +new Date(b.date));
 		// Opening balance = starting balances + net of all tx before the period.
 		let cum =
 			settings.value.startingBalanceCash +
@@ -93,7 +91,7 @@
 
 	let pageEl = $state<HTMLElement | null>(null);
 	onMount(() => {
-		if (pageEl && !reduced) {
+		if (pageEl && !motionReduced()) {
 			gsap.from(pageEl.querySelectorAll('.reveal'), {
 				y: 16,
 				opacity: 0,
@@ -115,9 +113,20 @@
 	<header class="head reveal">
 		<div class="who">
 			<span class="hi">Hi, {settings.value.userName}</span>
-			<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>
+			<svg
+				width="14"
+				height="14"
+				viewBox="0 0 24 24"
+				fill="none"
+				stroke="currentColor"
+				stroke-width="3"
+				stroke-linecap="round"
+				stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg
+			>
 		</div>
-		<div class="avatar" style="background: linear-gradient(135deg, #93c5fd, #c4b5fd)">{settings.value.userName.charAt(0).toUpperCase()}</div>
+		<div class="avatar" style="background: linear-gradient(135deg, #93c5fd, #c4b5fd)">
+			{settings.value.userName.charAt(0).toUpperCase()}
+		</div>
 	</header>
 
 	<div class="reveal">
@@ -127,7 +136,7 @@
 			{period}
 			{periods}
 			onPeriodChange={(p) => (period = p)}
-			trend={trend}
+			{trend}
 			{changeUp}
 			{changeDown}
 		/>
@@ -137,12 +146,15 @@
 		<div class="acc cash">
 			<span class="acc-dot"></span>
 			<span class="acc-label">Cash</span>
-			<span class="acc-val">{formatCurrency(data.balanceCash, settings.value.defaultCurrency)}</span>
+			<span class="acc-val">{formatCurrency(data.balanceCash, settings.value.defaultCurrency)}</span
+			>
 		</div>
 		<div class="acc debit">
 			<span class="acc-dot"></span>
 			<span class="acc-label">Debit</span>
-			<span class="acc-val">{formatCurrency(data.balanceDebit, settings.value.defaultCurrency)}</span>
+			<span class="acc-val"
+				>{formatCurrency(data.balanceDebit, settings.value.defaultCurrency)}</span
+			>
 		</div>
 	</div>
 
@@ -171,20 +183,27 @@
 		<div class="section-head">
 			<h3>Categories</h3>
 			<SegmentedControl
-				options={[{ value: 'expense', label: 'Pengeluaran' }, { value: 'income', label: 'Pemasukan' }]}
+				options={[
+					{ value: 'expense', label: 'Pengeluaran' },
+					{ value: 'income', label: 'Pemasukan' }
+				]}
 				value={pieMode}
 				onchange={(v) => (pieMode = v as 'income' | 'expense')}
 				size="sm"
 			/>
 		</div>
 		{#if pieSlices.length === 0}
-			<p class="empty">Belum ada transaksi {pieMode === 'income' ? 'pemasukan' : 'pengeluaran'} bulan ini.</p>
+			<p class="empty">
+				Belum ada transaksi {pieMode === 'income' ? 'pemasukan' : 'pengeluaran'} bulan ini.
+			</p>
 		{:else}
 			<div class="pie-row">
 				<PieChart
 					slices={pieSlices}
 					size={180}
-					centerValue={Math.round(pieMode === 'income' ? data.monthIn : data.monthSpent).toLocaleString('en-US')}
+					centerValue={Math.round(
+						pieMode === 'income' ? data.monthIn : data.monthSpent
+					).toLocaleString('en-US')}
 					centerLabel={pieMode === 'income' ? 'In' : 'Spent'}
 				/>
 				<ul class="legend">
@@ -192,7 +211,11 @@
 						<li>
 							<span class="dot" style="background: {s.color}"></span>
 							<span class="leg-name">{s.label}</span>
-							<span class="leg-val">{Math.round((s.value / (pieSlices.reduce((a, b) => a + b.value, 0) || 1)) * 100)}%</span>
+							<span class="leg-val"
+								>{Math.round(
+									(s.value / (pieSlices.reduce((a, b) => a + b.value, 0) || 1)) * 100
+								)}%</span
+							>
 						</li>
 					{/each}
 				</ul>
@@ -206,18 +229,30 @@
 			<a href="/money/spent" class="see-all">Lihat semua</a>
 		</div>
 		{#if recent.length === 0}
-			<p class="empty">Belum ada transaksi bulan ini. Tekan tombol <strong>Add</strong> untuk mencatat.</p>
+			<p class="empty">
+				Belum ada transaksi bulan ini. Tekan tombol <strong>Add</strong> untuk mencatat.
+			</p>
 		{:else}
 			<div role="list">
 				{#each recent as t (t.id)}
-					<TransactionRow tx={t} category={data.catsById.get(t.categoryId)} currency={settings.value.defaultCurrency} onSelect={(tx) => (selectedTx = tx)} />
+					<TransactionRow
+						tx={t}
+						category={data.catsById.get(t.categoryId)}
+						currency={settings.value.defaultCurrency}
+						onSelect={(tx) => (selectedTx = tx)}
+					/>
 				{/each}
 			</div>
 		{/if}
 	</section>
 </div>
 
-<TransactionDetail tx={selectedTx} category={selectedTx ? data.catsById.get(selectedTx.categoryId) : undefined} currency={settings.value.defaultCurrency} onClose={() => (selectedTx = null)} />
+<TransactionDetail
+	tx={selectedTx}
+	category={selectedTx ? data.catsById.get(selectedTx.categoryId) : undefined}
+	currency={settings.value.defaultCurrency}
+	onClose={() => (selectedTx = null)}
+/>
 
 <style>
 	.dash {

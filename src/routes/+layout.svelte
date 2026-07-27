@@ -1,9 +1,9 @@
 <script lang="ts">
 	import './layout.css';
 	import { onMount } from 'svelte';
-	import { settings } from '$lib/state/settings.svelte';
+	import { settings, effectiveTheme, motionReduced } from '$lib/state/settings.svelte';
 	import { ensureSeed } from '$lib/db';
-	import { gsap, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap } from '$lib/animations/gsap';
 	import DockNav from '$lib/components/DockNav.svelte';
 
 	let { children, data } = $props();
@@ -11,13 +11,15 @@
 	let ready = $state(false);
 	// Onboarding is full-bleed and shows no dock / page wrapper.
 	let onboarding = $derived(data?.onboarded === false);
-	const reduced = prefersReducedMotion();
+
+	let auroraTweens: gsap.core.Tween[] = [];
 
 	function startAurora() {
-		if (reduced) return;
+		if (motionReduced()) return;
+		stopAurora();
 		const blobs = document.querySelectorAll<HTMLElement>('.aurora-blob');
 		blobs.forEach((b, i) => {
-			gsap.to(b, {
+			const tween = gsap.to(b, {
 				x: i % 2 === 0 ? 40 : -40,
 				y: i % 2 === 0 ? -30 : 30,
 				scale: 1.08 + (i % 3) * 0.06,
@@ -26,11 +28,24 @@
 				yoyo: true,
 				ease: 'sine.inOut'
 			});
+			auroraTweens.push(tween);
 		});
 	}
 
+	function stopAurora() {
+		auroraTweens.forEach((t) => t.kill());
+		auroraTweens = [];
+		gsap.set('.aurora-blob', { clearProps: 'transform' });
+	}
+
+	function hideSplash() {
+		const splash = document.getElementById('splash');
+		if (!splash) return;
+		splash.classList.add('hidden');
+		setTimeout(() => splash.remove(), 400);
+	}
+
 	onMount(() => {
-		startAurora();
 		// iOS ignores user-scalable=no, so block pinch-zoom gestures explicitly.
 		const preventGesture = (e: Event) => e.preventDefault();
 		const preventMultiTouch = (e: TouchEvent) => {
@@ -43,18 +58,40 @@
 			await ensureSeed();
 			await settings.load();
 			ready = true;
+			hideSplash();
 		})();
 		return () => {
 			document.removeEventListener('gesturestart', preventGesture);
 			document.removeEventListener('gesturechange', preventGesture);
 			document.removeEventListener('touchmove', preventMultiTouch);
+			stopAurora();
 		};
 	});
 
-	// Keep <html data-theme> in sync with the settings rune.
+	// Keep <html data-theme> in sync with the effective theme (handles auto).
 	$effect(() => {
 		if (typeof document !== 'undefined') {
-			document.documentElement.setAttribute('data-theme', settings.value.theme);
+			document.documentElement.setAttribute('data-theme', effectiveTheme());
+		}
+	});
+
+	// React to the reduce-motion setting dynamically (start/stop ambient aurora).
+	$effect(() => {
+		if (motionReduced()) {
+			stopAurora();
+		} else {
+			startAurora();
+		}
+	});
+
+	// Keep <html data-reduce-motion> in sync so CSS can disable transitions globally.
+	$effect(() => {
+		if (typeof document !== 'undefined') {
+			if (motionReduced()) {
+				document.documentElement.setAttribute('data-reduce-motion', '');
+			} else {
+				document.documentElement.removeAttribute('data-reduce-motion');
+			}
 		}
 	});
 </script>
@@ -67,14 +104,14 @@
 </div>
 
 <div class="app-shell" class:onboarding>
-	{#if !ready}
-		<div class="boot" aria-busy="true">Loading…</div>
-	{:else if onboarding}
-		<div class="page-full">{@render children()}</div>
-	{:else}
-		<div class="page">
-			{@render children()}
-		</div>
+	{#if ready}
+		{#if onboarding}
+			<div class="page-full">{@render children()}</div>
+		{:else}
+			<div class="page">
+				{@render children()}
+			</div>
+		{/if}
 	{/if}
 </div>
 
@@ -100,14 +137,5 @@
 		position: relative;
 		width: 100%;
 		min-height: 100dvh;
-	}
-	.boot {
-		position: absolute;
-		inset: 0;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		color: var(--text-2);
-		font-weight: 500;
 	}
 </style>

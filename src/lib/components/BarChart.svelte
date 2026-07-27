@@ -3,7 +3,8 @@
 	// a colored gradient; inactive bars use a hatch/transparent pattern.
 	// Bars rise in with a GSAP stagger.
 	import { onDestroy } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 
 	interface Bar {
 		label: string;
@@ -17,13 +18,12 @@
 	}
 	let { bars, height = 180, color = 'var(--green)' }: Props = $props();
 
-	const reduced = prefersReducedMotion();
 	const max = $derived(Math.max(1, ...bars.map((b) => b.value)));
 	let barEls: HTMLElement[] = $state([]);
 
 	$effect(() => {
 		bars;
-		if (reduced) return;
+		if (motionReduced()) return;
 		const id = requestAnimationFrame(() => {
 			barEls.forEach((el, i) => {
 				if (!el) return;

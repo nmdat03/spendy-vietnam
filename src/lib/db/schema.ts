@@ -37,7 +37,8 @@ export type SettingKey =
 	| 'startingBalanceCash'
 	| 'startingBalanceDebit'
 	| 'hasOnboarded'
-	| 'defaultAccount';
+	| 'defaultAccount'
+	| 'reduceMotion';
 
 export interface SettingRow {
 	key: SettingKey;

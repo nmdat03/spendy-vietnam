@@ -1,6 +1,7 @@
 <script lang="ts">
 	// CategoryChip: single selectable category tile (icon + name) used in Step 2 grid.
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import Icon from './Icon.svelte';
 	import type { Category } from '$lib/db/schema';
 
@@ -12,13 +13,12 @@
 	let { category, selected, onselect }: Props = $props();
 
 	let el = $state<HTMLButtonElement | null>(null);
-	const reduced = prefersReducedMotion();
 
 	// Entrance stagger is handled by the parent; here we just animate selection.
 	$effect(() => {
 		selected;
 		if (!el) return;
-		if (selected && !reduced) {
+		if (selected && !motionReduced()) {
 			gsap.fromTo(el, { scale: 0.96 }, { scale: 1, duration: 0.35, ease: EASES.outBack });
 		}
 	});
@@ -40,7 +40,16 @@
 		<Icon name={category.icon} size={22} color={category.color} />
 		{#if selected}
 			<span class="check" aria-hidden="true">
-				<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+				<svg
+					width="14"
+					height="14"
+					viewBox="0 0 24 24"
+					fill="none"
+					stroke="#fff"
+					stroke-width="3"
+					stroke-linecap="round"
+					stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg
+				>
 			</span>
 		{/if}
 	</span>
@@ -57,7 +66,9 @@
 		border-radius: var(--r-md);
 		background: var(--surface-2);
 		border: 2px solid transparent;
-		transition: border-color 0.2s ease, background 0.2s ease;
+		transition:
+			border-color 0.2s ease,
+			background 0.2s ease;
 	}
 	.chip.selected {
 		border-color: var(--cat);

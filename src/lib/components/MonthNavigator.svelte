@@ -2,17 +2,17 @@
 	// MonthNavigator: white pill in the middle flanked by prev/next round buttons.
 	// Slides horizontally when the month changes.
 	import { onMount } from 'svelte';
-	import { gsap, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { activeMonth, monthLabel } from '$lib/state/month.svelte';
 	import Icon from './Icon.svelte';
 
 	let labelEl = $state<HTMLSpanElement | null>(null);
-	const reduced = prefersReducedMotion();
 	let lastDir = $state<number>(0);
 
 	$effect(() => {
 		activeMonth.value;
-		if (!labelEl || reduced) return;
+		if (!labelEl || motionReduced()) return;
 		const dir = lastDir || 0;
 		gsap.fromTo(
 			labelEl,
@@ -34,9 +34,16 @@
 </script>
 
 <div class="month-nav" aria-label="Navigasi bulan">
-	<button class="btn" onclick={prev} aria-label="Bulan sebelumnya"><Icon name="chevron-left" size={18} /></button>
+	<button class="btn" onclick={prev} aria-label="Bulan sebelumnya"
+		><Icon name="chevron-left" size={18} /></button
+	>
 	<span class="pill" bind:this={labelEl}>{monthLabel(activeMonth.value)}</span>
-	<button class="btn" onclick={next} aria-label="Bulan berikutnya" disabled={activeMonth.isCurrent()}><Icon name="chevron-right" size={18} /></button>
+	<button
+		class="btn"
+		onclick={next}
+		aria-label="Bulan berikutnya"
+		disabled={activeMonth.isCurrent()}><Icon name="chevron-right" size={18} /></button
+	>
 </div>
 
 <style>

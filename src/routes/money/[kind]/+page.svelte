@@ -5,7 +5,8 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { settings } from '$lib/state/settings.svelte';
 	import { activeMonth, monthBounds, monthLabel } from '$lib/state/month.svelte';
 	import { createMonthData } from '$lib/state/monthData.svelte';
@@ -17,7 +18,6 @@
 	import type { Transaction } from '$lib/db/schema';
 
 	const data = createMonthData();
-	const reduced = prefersReducedMotion();
 
 	// Derive kind from the route param.
 	const kind = $derived($page.params.kind === 'in' ? 'in' : 'spent');
@@ -62,7 +62,7 @@
 
 	let root = $state<HTMLElement | null>(null);
 	onMount(() => {
-		if (root && !reduced) {
+		if (root && !motionReduced()) {
 			gsap.from(root.querySelectorAll('.reveal'), {
 				y: 14,
 				opacity: 0,
@@ -80,7 +80,10 @@
 <div class="money" bind:this={root}>
 	<div class="tabs reveal">
 		<SegmentedControl
-			options={[{ value: 'in', label: 'Money in' }, { value: 'spent', label: 'Money spent' }]}
+			options={[
+				{ value: 'in', label: 'Money in' },
+				{ value: 'spent', label: 'Money spent' }
+			]}
 			value={kind}
 			onchange={switchKind}
 			size="md"
@@ -88,7 +91,13 @@
 	</div>
 
 	<h1 class="title reveal">{title}</h1>
-	<div class="total reveal">{new Intl.NumberFormat('en-US', { style: 'currency', currency: settings.value.defaultCurrency, maximumFractionDigits: settings.value.defaultCurrency === 'IDR' ? 0 : 2 }).format(total)}</div>
+	<div class="total reveal">
+		{new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: settings.value.defaultCurrency,
+			maximumFractionDigits: settings.value.defaultCurrency === 'IDR' ? 0 : 2
+		}).format(total)}
+	</div>
 	<div class="month-label reveal">{monthLabel(activeMonth.value)}</div>
 
 	<div class="chart-card card reveal">
@@ -103,18 +112,30 @@
 			<span class="count">{listTxs.length}</span>
 		</div>
 		{#if listTxs.length === 0}
-			<p class="empty">Belum ada transaksi {kind === 'in' ? 'pemasukan' : 'pengeluaran'} bulan ini.</p>
+			<p class="empty">
+				Belum ada transaksi {kind === 'in' ? 'pemasukan' : 'pengeluaran'} bulan ini.
+			</p>
 		{:else}
 			<div role="list">
 				{#each listTxs as t (t.id)}
-					<TransactionRow tx={t} category={data.catsById.get(t.categoryId)} currency={settings.value.defaultCurrency} onSelect={(tx) => (selectedTx = tx)} />
+					<TransactionRow
+						tx={t}
+						category={data.catsById.get(t.categoryId)}
+						currency={settings.value.defaultCurrency}
+						onSelect={(tx) => (selectedTx = tx)}
+					/>
 				{/each}
 			</div>
 		{/if}
 	</section>
 </div>
 
-<TransactionDetail tx={selectedTx} category={selectedTx ? data.catsById.get(selectedTx.categoryId) : undefined} currency={settings.value.defaultCurrency} onClose={() => (selectedTx = null)} />
+<TransactionDetail
+	tx={selectedTx}
+	category={selectedTx ? data.catsById.get(selectedTx.categoryId) : undefined}
+	currency={settings.value.defaultCurrency}
+	onClose={() => (selectedTx = null)}
+/>
 
 <style>
 	.money {

@@ -22,7 +22,7 @@ export function seedDefaultCategories(): Omit<Category, 'id'>[] {
 export function defaultSettings(): SettingRow[] {
 	return [
 		{ key: 'defaultCurrency', value: 'IDR' },
-		{ key: 'theme', value: 'light' },
+		{ key: 'theme', value: 'auto' },
 		{ key: 'autoSyncEnabled', value: true },
 		{ key: 'lastSyncedAt', value: null },
 		{ key: 'userName', value: 'Friend' },
@@ -30,6 +30,7 @@ export function defaultSettings(): SettingRow[] {
 		{ key: 'startingBalanceCash', value: 0 },
 		{ key: 'startingBalanceDebit', value: 0 },
 		{ key: 'hasOnboarded', value: false },
-		{ key: 'defaultAccount', value: 'cash' }
+		{ key: 'defaultAccount', value: 'cash' },
+		{ key: 'reduceMotion', value: false }
 	];
 }

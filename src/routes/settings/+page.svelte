@@ -1,22 +1,16 @@
 <script lang="ts">
 	// Akun / Pengaturan: profile, category CRUD, currency, sync & backup, theme.
 	import { onMount } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { liveQuery } from 'dexie';
-	import {
-		db,
-		addCategory,
-		updateCategory,
-		deleteCategory
-	} from '$lib/db';
+	import { db, addCategory, updateCategory, deleteCategory } from '$lib/db';
 	import { settings } from '$lib/state/settings.svelte';
 	import { createMonthData } from '$lib/state/monthData.svelte';
 	import { SUPPORTED_CURRENCIES, formatCurrency } from '$lib/format/currency';
 	import type { Category, TxType } from '$lib/db/schema';
 	import Icon, { ICON_NAMES } from '$lib/components/Icon.svelte';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
-
-	const reduced = prefersReducedMotion();
 
 	// Reactive data hook so the profile shows the live total balance.
 	const data = createMonthData();
@@ -29,11 +23,28 @@
 		return () => sub.unsubscribe();
 	});
 
-	const incomeCats = $derived(categories.filter((c) => c.type === 'income').sort((a, b) => a.order - b.order));
-	const expenseCats = $derived(categories.filter((c) => c.type === 'expense').sort((a, b) => a.order - b.order));
+	const incomeCats = $derived(
+		categories.filter((c) => c.type === 'income').sort((a, b) => a.order - b.order)
+	);
+	const expenseCats = $derived(
+		categories.filter((c) => c.type === 'expense').sort((a, b) => a.order - b.order)
+	);
 
 	let catTab = $state<TxType>('expense');
-	const palette = ['#f97316', '#3b82f6', '#ec4899', '#8b5cf6', '#ef4444', '#14b8a6', '#22c55e', '#0ea5e9', '#f59e0b', '#64748b', '#a855f7', '#06b6d4'];
+	const palette = [
+		'#f97316',
+		'#3b82f6',
+		'#ec4899',
+		'#8b5cf6',
+		'#ef4444',
+		'#14b8a6',
+		'#22c55e',
+		'#0ea5e9',
+		'#f59e0b',
+		'#64748b',
+		'#a855f7',
+		'#06b6d4'
+	];
 
 	// Editor state.
 	let editing = $state<Category | null>(null);
@@ -44,7 +55,14 @@
 	let moveToId = $state<number | null>(null);
 
 	function openNew() {
-		editing = { id: undefined, type: catTab, name: '', icon: ICON_NAMES[0], color: palette[0], order: (catTab === 'expense' ? expenseCats : incomeCats).length };
+		editing = {
+			id: undefined,
+			type: catTab,
+			name: '',
+			icon: ICON_NAMES[0],
+			color: palette[0],
+			order: (catTab === 'expense' ? expenseCats : incomeCats).length
+		};
 		newName = '';
 		newIcon = ICON_NAMES[0];
 		newColor = palette[0];
@@ -88,8 +106,13 @@
 	}
 
 	// Theme toggle.
-	async function setTheme(t: 'light' | 'dark') {
+	async function setTheme(t: 'light' | 'dark' | 'auto') {
 		await settings.update('theme', t);
+	}
+
+	// Reduce animation toggle.
+	async function toggleReduceMotion() {
+		await settings.update('reduceMotion', !settings.value.reduceMotion);
 	}
 
 	// Default account (cash/debit) for new transactions.
@@ -135,7 +158,7 @@
 
 	let root = $state<HTMLElement | null>(null);
 	onMount(() => {
-		if (root && !reduced) {
+		if (root && !motionReduced()) {
 			gsap.from(root.querySelectorAll('.reveal'), {
 				y: 14,
 				opacity: 0,
@@ -157,16 +180,24 @@
 			{settings.value.userName.charAt(0).toUpperCase()}
 		</div>
 		<div class="profile-meta">
-			<input class="name-input" type="text" value={settings.value.userName} oninput={(e) => settings.update('userName', e.currentTarget.value)} />
+			<input
+				class="name-input"
+				type="text"
+				value={settings.value.userName}
+				oninput={(e) => settings.update('userName', e.currentTarget.value)}
+			/>
 			<span class="sub">{currency} · {formatCurrency(data.balance, currency)}</span>
 		</div>
 	</section>
 
-	<section class="card block reveal">
+	<section class="card reveal block">
 		<h2 class="block-title">Kategori</h2>
 		<div class="block-head">
 			<SegmentedControl
-				options={[{ value: 'expense', label: 'Pengeluaran' }, { value: 'income', label: 'Pemasukan' }]}
+				options={[
+					{ value: 'expense', label: 'Pengeluaran' },
+					{ value: 'income', label: 'Pemasukan' }
+				]}
 				value={catTab}
 				onchange={(v) => (catTab = v as TxType)}
 				size="sm"
@@ -176,74 +207,121 @@
 			</button>
 		</div>
 		<ul class="cat-list">
-			{#each (catTab === 'expense' ? expenseCats : incomeCats) as c (c.id)}
+			{#each catTab === 'expense' ? expenseCats : incomeCats as c (c.id)}
 				<li>
-					<span class="cat-ico" style="--c: {c.color}"><Icon name={c.icon} size={16} color={c.color} /></span>
+					<span class="cat-ico" style="--c: {c.color}"
+						><Icon name={c.icon} size={16} color={c.color} /></span
+					>
 					<span class="cat-name">{c.name}</span>
-					<button class="icon-btn" onclick={() => openEdit(c)} aria-label="Edit"><Icon name="pencil" size={15} /></button>
-					<button class="icon-btn" onclick={() => (confirmDelete = c)} aria-label="Hapus"><Icon name="trash-2" size={15} /></button>
+					<button class="icon-btn" onclick={() => openEdit(c)} aria-label="Edit"
+						><Icon name="pencil" size={15} /></button
+					>
+					<button class="icon-btn" onclick={() => (confirmDelete = c)} aria-label="Hapus"
+						><Icon name="trash-2" size={15} /></button
+					>
 				</li>
 			{/each}
 		</ul>
 	</section>
 
-	<section class="card block reveal">
+	<section class="card reveal block">
 		<h2 class="block-title">Mata Uang</h2>
 		<div class="currency-grid">
 			{#each SUPPORTED_CURRENCIES as c (c)}
-				<button class="cur-pill" class:active={c === currency} onclick={() => setCurrency(c)}>{c}</button>
+				<button class="cur-pill" class:active={c === currency} onclick={() => setCurrency(c)}
+					>{c}</button
+				>
 			{/each}
 		</div>
 		<p class="hint">Default currency mempengaruhi format seluruh nominal di app.</p>
-</section>
+	</section>
 
-<section class="card block reveal">
-	<h2 class="block-title">Saldo Awal</h2>
-	<p class="hint">Saldo awal masuk ke Total Balance dan dihitung per akun (Cash / Debit).</p>
-	<div class="saldo-row">
-		<label class="field">
-			<span class="flabel">Cash</span>
-			<input
-				class="finput"
-				type="number"
-				inputmode="decimal"
-				min="0"
-				value={settings.value.startingBalanceCash}
-				oninput={(e) => setSaldo('startingBalanceCash', e.currentTarget.value)}
-			/>
-		</label>
-		<label class="field">
-			<span class="flabel">Debit</span>
-			<input
-				class="finput"
-				type="number"
-				inputmode="decimal"
-				min="0"
-				value={settings.value.startingBalanceDebit}
-				oninput={(e) => setSaldo('startingBalanceDebit', e.currentTarget.value)}
-			/>
-		</label>
-	</div>
-</section>
-
-	<section class="card block reveal">
-		<h2 class="block-title">Tema</h2>
-		<div class="theme-row">
-			<button class="cur-pill" class:active={settings.value.theme === 'light'} onclick={() => setTheme('light')}>Light</button>
-			<button class="cur-pill" class:active={settings.value.theme === 'dark'} onclick={() => setTheme('dark')}>Dark</button>
+	<section class="card reveal block">
+		<h2 class="block-title">Saldo Awal</h2>
+		<p class="hint">Saldo awal masuk ke Total Balance dan dihitung per akun (Cash / Debit).</p>
+		<div class="saldo-row">
+			<label class="field">
+				<span class="flabel">Cash</span>
+				<input
+					class="finput"
+					type="number"
+					inputmode="decimal"
+					min="0"
+					value={settings.value.startingBalanceCash}
+					oninput={(e) => setSaldo('startingBalanceCash', e.currentTarget.value)}
+				/>
+			</label>
+			<label class="field">
+				<span class="flabel">Debit</span>
+				<input
+					class="finput"
+					type="number"
+					inputmode="decimal"
+					min="0"
+					value={settings.value.startingBalanceDebit}
+					oninput={(e) => setSaldo('startingBalanceDebit', e.currentTarget.value)}
+				/>
+			</label>
 		</div>
 	</section>
 
-	<section class="card block reveal">
+	<section class="card reveal block">
+		<h2 class="block-title">Tema</h2>
+		<div class="theme-row">
+			<button
+				class="cur-pill"
+				class:active={settings.value.theme === 'light'}
+				onclick={() => setTheme('light')}>Light</button
+			>
+			<button
+				class="cur-pill"
+				class:active={settings.value.theme === 'dark'}
+				onclick={() => setTheme('dark')}>Dark</button
+			>
+			<button
+				class="cur-pill"
+				class:active={settings.value.theme === 'auto'}
+				onclick={() => setTheme('auto')}>Auto</button
+			>
+		</div>
+		<p class="hint">Auto mengikuti pengaturan mode gelap perangkatmu.</p>
+	</section>
+
+	<section class="card reveal block">
+		<h2 class="block-title">Aksesibilitas</h2>
+		<div class="access-row">
+			<span class="access-label">Kurangi animasi</span>
+			<button
+				class="toggle"
+				class:active={settings.value.reduceMotion}
+				onclick={toggleReduceMotion}
+				aria-pressed={settings.value.reduceMotion}
+				aria-label="Kurangi animasi"
+			>
+				<span class="toggle-thumb"></span>
+			</button>
+		</div>
+		<p class="hint">Mematikan sebagian besar animasi dan transisi di aplikasi.</p>
+	</section>
+
+	<section class="card reveal block">
 		<h2 class="block-title">Akun Default</h2>
 		<p class="hint">Akun yang otomatis terpilih saat menambah catatan baru.</p>
 		<div class="theme-row">
-			<button class="cur-pill" class:active={settings.value.defaultAccount === 'cash'} onclick={() => setDefaultAccount('cash')}>💵 Cash</button>
-			<button class="cur-pill" class:active={settings.value.defaultAccount === 'debit'} onclick={() => setDefaultAccount('debit')}>💳 Debit</button>
+			<button
+				class="cur-pill"
+				class:active={settings.value.defaultAccount === 'cash'}
+				onclick={() => setDefaultAccount('cash')}>💵 Cash</button
+			>
+			<button
+				class="cur-pill"
+				class:active={settings.value.defaultAccount === 'debit'}
+				onclick={() => setDefaultAccount('debit')}>💳 Debit</button
+			>
 		</div>
 	</section>
 
-	<section class="card block reveal">
+	<section class="card reveal block">
 		<h2 class="block-title">Backup</h2>
 		<p class="hint">Export seluruh data ke file JSON, atau impor kembali untuk memulihkan.</p>
 		<div class="backup-row">
@@ -255,9 +333,9 @@
 		</div>
 	</section>
 
-		<!-- Hidden: reset onboarding for testing/demo. -->
-		<button class="reset-onb" onclick={resetOnboarding}>Reset Onboarding</button>
-	</div>
+	<!-- Hidden: reset onboarding for testing/demo. -->
+	<button class="reset-onb" onclick={resetOnboarding}>Reset Onboarding</button>
+</div>
 
 <!-- Category editor modal -->
 {#if editing}
@@ -272,8 +350,13 @@
 			<span class="flabel">Ikon</span>
 			<div class="icon-picker">
 				{#each ICON_NAMES as name (name)}
-					<button class="ico-pick" class:active={newIcon === name} style="--c: {newColor}" onclick={() => (newIcon = name)}>
-						<Icon name={name} size={18} color={newColor} />
+					<button
+						class="ico-pick"
+						class:active={newIcon === name}
+						style="--c: {newColor}"
+						onclick={() => (newIcon = name)}
+					>
+						<Icon {name} size={18} color={newColor} />
 					</button>
 				{/each}
 			</div>
@@ -282,7 +365,13 @@
 			<span class="flabel">Warna</span>
 			<div class="color-row">
 				{#each palette as col (col)}
-					<button class="color-pick" class:active={newColor === col} style="background: {col}" onclick={() => (newColor = col)} aria-label={col}></button>
+					<button
+						class="color-pick"
+						class:active={newColor === col}
+						style="background: {col}"
+						onclick={() => (newColor = col)}
+						aria-label={col}
+					></button>
 				{/each}
 			</div>
 		</div>
@@ -315,8 +404,6 @@
 		</div>
 	</div>
 {/if}
-
-
 
 <style>
 	.settings {
@@ -618,5 +705,42 @@
 		color: var(--text-3);
 		opacity: 0.7;
 		padding: 8px;
+	}
+	.access-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+	.access-label {
+		font-size: 15px;
+		font-weight: 500;
+		color: var(--text);
+	}
+	.toggle {
+		width: 50px;
+		height: 28px;
+		border-radius: 999px;
+		background: var(--surface-2);
+		position: relative;
+		transition: background 0.2s ease;
+		outline: 2px solid transparent;
+	}
+	.toggle.active {
+		background: var(--accent);
+	}
+	.toggle-thumb {
+		position: absolute;
+		top: 3px;
+		left: 3px;
+		width: 22px;
+		height: 22px;
+		border-radius: 50%;
+		background: var(--surface);
+		box-shadow: var(--shadow-sm);
+		transition: transform 0.2s ease;
+	}
+	.toggle.active .toggle-thumb {
+		transform: translateX(22px);
 	}
 </style>

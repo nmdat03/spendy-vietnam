@@ -1,6 +1,7 @@
 <div align="center">
 
 # 💸 Spendy
+
 ### Track your spending — offline-first, installable, and alive.
 
 A mobile-first Progressive Web App for tracking personal income and expenses, built entirely client-side with a native-app feel: fluid GSAP animations, an animated aurora background, and a slot-machine-style balance reveal.
@@ -19,19 +20,19 @@ A mobile-first Progressive Web App for tracking personal income and expenses, bu
 
 **Spendy** is a personal finance / spending-tracker app you can install like a native app on Android, iOS, Windows, macOS, or Linux — yet it's just a website under the hood. There's no backend, no account, no cloud sync: every transaction lives in your browser's IndexedDB (via Dexie.js), and you stay in control of your own data through manual JSON export/import.
 
-The goal isn't just "another CRUD expense tracker" — it's an exploration of how *alive* a PWA can feel: morphing dock navigation, a slot-machine digit reveal for balances, a slowly drifting aurora-gradient background, and a fully animated onboarding experience, all powered by GSAP.
+The goal isn't just "another CRUD expense tracker" — it's an exploration of how _alive_ a PWA can feel: morphing dock navigation, a slot-machine digit reveal for balances, a slowly drifting aurora-gradient background, and a fully animated onboarding experience, all powered by GSAP.
 
 ## 🖼️ Screenshots & Demo
- 
+
 <div align="center">
 ### 🎬 Demo
- 
+
 <video src="docs/screenshots/video.mp4" controls width="320"></video>
- 
-*(Video not showing? [Watch it directly](docs/screenshots/video.mp4) — inline video preview only renders on github.com, not on every markdown viewer.)*
- 
+
+_(Video not showing? [Watch it directly](docs/screenshots/video.mp4) — inline video preview only renders on github.com, not on every markdown viewer.)_
+
 ### 📱 Screens
- 
+
 <table>
   <tr>
     <td align="center"><img src="docs/screenshots/dashboard.png" width="220" alt="Dashboard screen"/><br/><sub><b>Dashboard</b></sub></td>
@@ -40,7 +41,6 @@ The goal isn't just "another CRUD expense tracker" — it's an exploration of ho
   </tr>
 </table>
 </div>
-
 
 ## 🚀 Features
 
@@ -58,15 +58,15 @@ The goal isn't just "another CRUD expense tracker" — it's an exploration of ho
 
 ## 🧱 Tech Stack
 
-| Layer                | Choice                                                              |
-|-----------------------|----------------------------------------------------------------------|
-| Runtime & package manager | [Bun](https://bun.sh/)                                            |
-| Framework              | [SvelteKit](https://kit.svelte.dev/) (Svelte 5 + runes), TypeScript |
-| Animation              | [GSAP](https://gsap.com/) (Flip, Draggable where needed)            |
-| Local database         | [Dexie.js](https://dexie.org/) over IndexedDB (single source of truth) |
-| Backup                 | Client-side JSON export/import (`Blob` + `FileReader`, no backend)  |
-| PWA / offline          | Web App Manifest + Service Worker (app-shell cache-first)           |
-| Charts                 | Lightweight chart library, animated via GSAP timelines              |
+| Layer                     | Choice                                                                 |
+| ------------------------- | ---------------------------------------------------------------------- |
+| Runtime & package manager | [Bun](https://bun.sh/)                                                 |
+| Framework                 | [SvelteKit](https://kit.svelte.dev/) (Svelte 5 + runes), TypeScript    |
+| Animation                 | [GSAP](https://gsap.com/) (Flip, Draggable where needed)               |
+| Local database            | [Dexie.js](https://dexie.org/) over IndexedDB (single source of truth) |
+| Backup                    | Client-side JSON export/import (`Blob` + `FileReader`, no backend)     |
+| PWA / offline             | Web App Manifest + Service Worker (app-shell cache-first)              |
+| Charts                    | Lightweight chart library, animated via GSAP timelines                 |
 
 No server, no database-as-a-service, no auth provider — the entire app ships as static assets.
 
@@ -131,7 +131,7 @@ Since there's no cloud sync by design, go to **Settings → Backup & Restore**:
 - **Export Data** — downloads a single `spendy-backup-YYYY-MM-DD.json` file with all your accounts, transactions, categories, and settings.
 - **Import Data** — restores from a previously exported file (with a confirmation step, since it can overwrite existing data).
 
-Keep a recent backup somewhere safe (cloud drive, email to yourself, etc.) — that file *is* your data.
+Keep a recent backup somewhere safe (cloud drive, email to yourself, etc.) — that file _is_ your data.
 
 ## 🗺️ Roadmap
 

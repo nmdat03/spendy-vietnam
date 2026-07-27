@@ -43,7 +43,10 @@ export function currencySymbol(currency: string): string {
 }
 
 // Splits a numeric amount into integer + fraction parts (for SlotNumber).
-export function splitAmount(amount: number, currency: string): {
+export function splitAmount(
+	amount: number,
+	currency: string
+): {
 	sign: string;
 	integer: string;
 	fraction: string;
@@ -63,4 +66,15 @@ export function splitAmount(amount: number, currency: string): {
 	};
 }
 
-export const SUPPORTED_CURRENCIES = ['IDR', 'USD', 'EUR', 'SGD', 'JPY', 'GBP', 'AUD', 'CAD', 'KRW', 'VND'];
+export const SUPPORTED_CURRENCIES = [
+	'IDR',
+	'USD',
+	'EUR',
+	'SGD',
+	'JPY',
+	'GBP',
+	'AUD',
+	'CAD',
+	'KRW',
+	'VND'
+];

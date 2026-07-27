@@ -2,7 +2,8 @@
 	// PieChart: custom SVG donut chart. Slices draw in via GSAP (stroke-dashoffset
 	// animating to 0). Tap a slice to highlight it and show its label/value.
 	import { onDestroy } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 
 	export interface PieSlice {
 		id: number | string;
@@ -39,12 +40,11 @@
 
 	let selectedId = $state<number | string | null>(null);
 	let ringEls: SVGCircleElement[] = $state([]);
-	const reduced = prefersReducedMotion();
 
 	$effect(() => {
 		slices;
 		// (Re)animate draw-in whenever slices change.
-		if (reduced) return;
+		if (motionReduced()) return;
 		const id = requestAnimationFrame(() => {
 			ringEls.forEach((el, i) => {
 				if (!el || segs[i] === undefined) return;
@@ -73,7 +73,14 @@
 <div class="pie-wrap">
 	<svg viewBox="-8 -8 116 116" width={size} height={size} class="pie-svg" role="img">
 		<g transform="rotate(-90 50 50)">
-			<circle cx="50" cy="50" r={R} fill="none" stroke="var(--surface-2)" stroke-width={thickness} />
+			<circle
+				cx="50"
+				cy="50"
+				r={R}
+				fill="none"
+				stroke="var(--surface-2)"
+				stroke-width={thickness}
+			/>
 			{#each segs as seg, i (seg.id)}
 				<circle
 					bind:this={ringEls[i]}

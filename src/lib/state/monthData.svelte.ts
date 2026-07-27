@@ -87,10 +87,16 @@ export function createMonthData(): MonthData {
 	const balance = $derived(balanceCash + balanceDebit);
 
 	const byCategoryIncome = $derived(
-		groupByCategory(transactions.filter((t) => t.type === 'income'), catsById)
+		groupByCategory(
+			transactions.filter((t) => t.type === 'income'),
+			catsById
+		)
 	);
 	const byCategoryExpense = $derived(
-		groupByCategory(transactions.filter((t) => t.type === 'expense'), catsById)
+		groupByCategory(
+			transactions.filter((t) => t.type === 'expense'),
+			catsById
+		)
 	);
 
 	return {

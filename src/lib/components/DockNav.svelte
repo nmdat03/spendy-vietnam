@@ -1,7 +1,7 @@
 <script lang="ts" module>
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
-	import { gsap, Flip, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, Flip, EASES } from '$lib/animations/gsap';
 	import Icon from './Icon.svelte';
 
 	interface DockItem {
@@ -20,8 +20,9 @@
 </script>
 
 <script lang="ts">
+	import { motionReduced } from '$lib/state/settings.svelte';
+
 	let pillEl = $state<HTMLDivElement | null>(null);
-	const reduced = prefersReducedMotion();
 
 	// Current path from SvelteKit page store; derive active item from it.
 	let currentPath = $derived($page.url.pathname);
@@ -34,7 +35,7 @@
 		activeKey;
 		const target = document.querySelector<HTMLElement>(`[data-dock-key="${activeKey}"]`);
 		if (!target || !pillEl) return;
-		if (reduced) {
+		if (motionReduced()) {
 			gsap.set(pillEl, { left: target.offsetLeft, width: target.offsetWidth });
 			return;
 		}
@@ -148,7 +149,9 @@
 	}
 	@media (prefers-reduced-motion: reduce) {
 		.pill {
-			transition: left 0.2s ease, width 0.2s ease;
+			transition:
+				left 0.2s ease,
+				width 0.2s ease;
 		}
 	}
 </style>

@@ -2,7 +2,8 @@
 	// BottomSheet: full-screen modal that slides up from the bottom (GSAP).
 	// Emits `close` on backdrop tap / drag-down handle / Esc.
 	import { onMount, onDestroy } from 'svelte';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 
 	interface Props {
 		open: boolean;
@@ -14,11 +15,10 @@
 
 	let sheet = $state<HTMLDivElement | null>(null);
 	let backdrop = $state<HTMLDivElement | null>(null);
-	const reduced = prefersReducedMotion();
 
 	function show() {
 		if (!sheet || !backdrop) return;
-		if (reduced) {
+		if (motionReduced()) {
 			gsap.set(sheet, { y: 0 });
 			gsap.set(backdrop, { opacity: 1, pointerEvents: 'auto' });
 			return;
@@ -34,7 +34,7 @@
 			cb?.();
 			return;
 		}
-		if (reduced) {
+		if (motionReduced()) {
 			gsap.set(sheet, { y: '100%' });
 			gsap.set(backdrop, { opacity: 0, pointerEvents: 'none' });
 			cb?.();
@@ -68,13 +68,7 @@
 </script>
 
 <div class="backdrop" bind:this={backdrop} onclick={onClose} aria-hidden="true"></div>
-<div
-	class="sheet"
-	bind:this={sheet}
-	role="dialog"
-	aria-modal="true"
-	aria-label={title}
->
+<div class="sheet" bind:this={sheet} role="dialog" aria-modal="true" aria-label={title}>
 	<button class="handle" onclick={onClose} aria-label="Tutup" tabindex="0"></button>
 	{#if title}
 		<header class="head">

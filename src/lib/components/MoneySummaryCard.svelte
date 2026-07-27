@@ -29,7 +29,11 @@
 	<div class="val" style="color: {color}">{formatCurrency(value, currency)}</div>
 	<div class="spark">
 		{#each bars as b, i (i)}
-			<span class="spk-bar" class:hi={highlight.includes(i)} style="height: {(b / maxBar) * 100}%; --c: {color}"></span>
+			<span
+				class="spk-bar"
+				class:hi={highlight.includes(i)}
+				style="height: {(b / maxBar) * 100}%; --c: {color}"
+			></span>
 		{/each}
 	</div>
 </a>

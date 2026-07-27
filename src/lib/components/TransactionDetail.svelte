@@ -25,18 +25,20 @@
 	}
 
 	const dateLabel = $derived(
-		tx
-			? new Date(tx.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' })
-			: ''
+		tx ? new Date(tx.date).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' }) : ''
 	);
 </script>
 
 {#if tx}
-	<BottomSheet open={true} title="Detail Transaksi" onClose={onClose}>
+	<BottomSheet open={true} title="Detail Transaksi" {onClose}>
 		<div class="detail">
 			<div class="amt-section">
 				<span class="amt-icon" style="--c: {category?.color ?? '#6b7280'}">
-					<Icon name={category?.icon ?? 'circle-ellipsis'} size={22} color={category?.color ?? '#6b7280'} />
+					<Icon
+						name={category?.icon ?? 'circle-ellipsis'}
+						size={22}
+						color={category?.color ?? '#6b7280'}
+					/>
 				</span>
 				<span class="amt" class:income={tx.type === 'income'} class:expense={tx.type === 'expense'}>
 					{tx.type === 'income' ? '+' : '−'}{formatCurrency(Math.abs(tx.amount), currency)}

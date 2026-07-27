@@ -14,14 +14,13 @@
 	// The dashboard's Cash/Debit balances already include these starting values.
 	import { onMount, onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
-	import { gsap, EASES, prefersReducedMotion } from '$lib/animations/gsap';
+	import { gsap, EASES } from '$lib/animations/gsap';
+	import { motionReduced } from '$lib/state/settings.svelte';
 	import { settings } from '$lib/state/settings.svelte';
 	import { currencySymbol, SUPPORTED_CURRENCIES } from '$lib/format/currency';
 	import AmountKeypad from '$lib/components/AmountKeypad.svelte';
 	import SlotNumber from '$lib/components/SlotNumber.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-
-	const reduced = prefersReducedMotion();
 
 	type Phase = 'intro' | 'carousel' | 'name' | 'setup';
 	let phase = $state<Phase>('intro');
@@ -93,7 +92,7 @@
 	// ============ Intro ============
 	function playIntro() {
 		if (!introEl) return;
-		if (reduced) {
+		if (motionReduced()) {
 			gsap.set([logoEl, wordEl, taglineEl], { opacity: 1, y: 0, scale: 1 });
 			return;
 		}
@@ -121,12 +120,17 @@
 	// ============ Phase transitions ============
 	function transitionTo(next: Phase) {
 		const oldPhase = phase;
-		const elMap: Record<Phase, HTMLElement | null> = { intro: introEl, carousel: carouselEl, name: nameEl, setup: setupEl };
+		const elMap: Record<Phase, HTMLElement | null> = {
+			intro: introEl,
+			carousel: carouselEl,
+			name: nameEl,
+			setup: setupEl
+		};
 		const fromEl = elMap[oldPhase];
 		const toEl = elMap[next];
 		phase = next;
 		const dir = phaseOrder(next) >= phaseOrder(oldPhase) ? 1 : -1;
-		if (reduced || !fromEl || !toEl) {
+		if (motionReduced() || !fromEl || !toEl) {
 			gsap.set(fromEl, { autoAlpha: 0 });
 			gsap.set(toEl, { autoAlpha: 1 });
 			if (next === 'carousel') initCarousel();
@@ -159,7 +163,7 @@
 	}
 
 	function playName() {
-		if (!nameEl || reduced) return;
+		if (!nameEl || motionReduced()) return;
 		gsap.from(nameEl.querySelectorAll('.reveal'), {
 			y: 18,
 			opacity: 0,
@@ -223,7 +227,7 @@
 
 	// Draw-in the active slide's line-art.
 	function drawInActive() {
-		if (reduced) return;
+		if (motionReduced()) return;
 		const slideEls = trackEl?.querySelectorAll('.slide');
 		if (!slideEls) return;
 		const active = slideEls[slide] as HTMLElement | undefined;
@@ -244,7 +248,7 @@
 
 	// ============ Setup ============
 	function playSetup() {
-		if (!setupEl || reduced) return;
+		if (!setupEl || motionReduced()) return;
 		gsap.from(setupEl.querySelectorAll('.reveal'), {
 			y: 18,
 			opacity: 0,
@@ -269,7 +273,7 @@
 	async function finish() {
 		if (finishing) return;
 		finishing = true;
-		if (totalCardEl && !reduced) {
+		if (totalCardEl && !motionReduced()) {
 			// Handoff feel: scale the total card up + fade toward the top before
 			// navigating, so the dashboard's "Total Balance" reveal reads as a
 			// continuation. (A true cross-route shared-element Flip would need a
@@ -293,7 +297,7 @@
 	// Animate the stacked-card switch whenever activeAccount changes.
 	$effect(() => {
 		activeAccount;
-		if (phase !== 'setup' || reduced) return;
+		if (phase !== 'setup' || motionReduced()) return;
 		const cards = setupEl?.querySelectorAll<HTMLElement>('.stack-card');
 		if (!cards) return;
 		cards.forEach((c) => {
@@ -316,22 +320,31 @@
 		introTimer = setTimeout(goCarousel, 1900);
 		// Pre-fill saldo from existing settings so returning users (who already set
 		// a saldo awal before onboarding existed) don't lose their values.
-		if (settings.value.startingBalanceDebit > 0) rawDebit = String(settings.value.startingBalanceDebit);
-		if (settings.value.startingBalanceCash > 0) rawCash = String(settings.value.startingBalanceCash);
+		if (settings.value.startingBalanceDebit > 0)
+			rawDebit = String(settings.value.startingBalanceDebit);
+		if (settings.value.startingBalanceCash > 0)
+			rawCash = String(settings.value.startingBalanceCash);
 		// (Background aurora is animated globally in the root layout.)
 	});
 
 	onDestroy(() => {
 		if (introTimer) clearTimeout(introTimer);
-		gsap.killTweensOf([introEl, carouselEl, trackEl, setupEl, totalCardEl].filter(Boolean) as HTMLElement[]);
+		gsap.killTweensOf(
+			[introEl, carouselEl, trackEl, setupEl, totalCardEl].filter(Boolean) as HTMLElement[]
+		);
 	});
 
 	const isLastSlide = $derived(slide === slides.length - 1);
 </script>
 
-	<div class="onb">
-		<!-- A. Brand Intro -->
-	<section class="phase intro" class:active={phase === 'intro'} bind:this={introEl} role="presentation">
+<div class="onb">
+	<!-- A. Brand Intro -->
+	<section
+		class="phase intro"
+		class:active={phase === 'intro'}
+		bind:this={introEl}
+		role="presentation"
+	>
 		<div class="intro-wrap">
 			<div class="logo" bind:this={logoEl}>
 				<svg viewBox="0 0 512 512" width="84" height="84" aria-hidden="true">
@@ -346,7 +359,14 @@
 						<rect x="0" y="120" width="56" height="92" rx="14" fill="url(#obg)" />
 						<rect x="86" y="74" width="56" height="138" rx="14" fill="url(#obg)" />
 						<rect x="172" y="28" width="56" height="184" rx="14" fill="url(#obg)" />
-						<path d="M40 168 L120 96 L180 140 L256 56" fill="none" stroke="#f472b6" stroke-width="16" stroke-linecap="round" stroke-linejoin="round" />
+						<path
+							d="M40 168 L120 96 L180 140 L256 56"
+							fill="none"
+							stroke="#f472b6"
+							stroke-width="16"
+							stroke-linecap="round"
+							stroke-linejoin="round"
+						/>
 					</g>
 				</svg>
 			</div>
@@ -359,7 +379,12 @@
 	</section>
 
 	<!-- B. Carousel -->
-	<section class="phase carousel" class:active={phase === 'carousel'} bind:this={carouselEl} aria-label="Pengenalan">
+	<section
+		class="phase carousel"
+		class:active={phase === 'carousel'}
+		bind:this={carouselEl}
+		aria-label="Pengenalan"
+	>
 		<button class="skip" onclick={() => transitionTo('name')} aria-label="Lewati">Lewati</button>
 
 		<div
@@ -378,7 +403,16 @@
 					<div class="slide">
 						<div class="illus">
 							{#if i === 0}
-								<svg viewBox="0 0 200 200" width="160" height="160" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+								<svg
+									viewBox="0 0 200 200"
+									width="160"
+									height="160"
+									fill="none"
+									stroke="currentColor"
+									stroke-width="3"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
 									<rect class="draw" x="60" y="20" width="80" height="160" rx="14" />
 									<line class="draw" x1="60" y1="46" x2="140" y2="46" />
 									<circle class="draw" cx="100" cy="100" r="3" />
@@ -389,15 +423,35 @@
 									<path class="draw" d="M88 158 l8 8 l16 -18" stroke="var(--green)" />
 								</svg>
 							{:else if i === 1}
-								<svg viewBox="0 0 200 200" width="160" height="160" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+								<svg
+									viewBox="0 0 200 200"
+									width="160"
+									height="160"
+									fill="none"
+									stroke-width="3"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
 									<circle class="draw" cx="100" cy="100" r="70" stroke="var(--border)" />
 									<path class="draw" d="M100 30 a70 70 0 0 1 60 106" stroke="var(--blue)" />
 									<line class="draw" x1="100" y1="100" x2="100" y2="30" stroke="var(--text-3)" />
 									<line class="draw" x1="100" y1="100" x2="160" y2="136" stroke="var(--text-3)" />
 								</svg>
 							{:else}
-								<svg viewBox="0 0 200 200" width="160" height="160" fill="none" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-									<path class="draw" d="M100 30 l56 22 v50 c0 38 -56 66 -56 66 s-56 -28 -56 -66 v-50 z" stroke="var(--blue)" />
+								<svg
+									viewBox="0 0 200 200"
+									width="160"
+									height="160"
+									fill="none"
+									stroke-width="3"
+									stroke-linecap="round"
+									stroke-linejoin="round"
+								>
+									<path
+										class="draw"
+										d="M100 30 l56 22 v50 c0 38 -56 66 -56 66 s-56 -28 -56 -66 v-50 z"
+										stroke="var(--blue)"
+									/>
 									<path class="draw" d="M74 100 l18 18 l34 -38" stroke="var(--green)" />
 								</svg>
 							{/if}
@@ -411,7 +465,12 @@
 
 		<div class="dots" aria-hidden="true">
 			{#each slides as _, i (i)}
-				<button class="dot" class:active={slide === i} onclick={() => goToSlide(i)} aria-label={`Slide ${i + 1}`}></button>
+				<button
+					class="dot"
+					class:active={slide === i}
+					onclick={() => goToSlide(i)}
+					aria-label={`Slide ${i + 1}`}
+				></button>
 			{/each}
 		</div>
 
@@ -425,9 +484,16 @@
 	</section>
 
 	<!-- Name input -->
-	<section class="phase name" class:active={phase === 'name'} bind:this={nameEl} aria-label="Masukkan nama">
+	<section
+		class="phase name"
+		class:active={phase === 'name'}
+		bind:this={nameEl}
+		aria-label="Masukkan nama"
+	>
 		<h2 class="setup-title reveal">Hai, siapa nama kamu?</h2>
-		<p class="setup-sub reveal">Masukkan nama panggilanmu supaya kami bisa menyapa dengan personal.</p>
+		<p class="setup-sub reveal">
+			Masukkan nama panggilanmu supaya kami bisa menyapa dengan personal.
+		</p>
 		<div class="name-input-wrap reveal">
 			<input
 				class="name-input"
@@ -438,11 +504,20 @@
 				onkeydown={(e) => e.key === 'Enter' && userName.trim() && transitionTo('setup')}
 			/>
 		</div>
-		<button class="next-btn reveal" disabled={!userName.trim()} onclick={() => transitionTo('setup')}>Lanjut</button>
+		<button
+			class="next-btn reveal"
+			disabled={!userName.trim()}
+			onclick={() => transitionTo('setup')}>Lanjut</button
+		>
 	</section>
 
 	<!-- C. Setup Saldo Awal -->
-	<section class="phase setup" class:active={phase === 'setup'} bind:this={setupEl} aria-label="Setup saldo awal">
+	<section
+		class="phase setup"
+		class:active={phase === 'setup'}
+		bind:this={setupEl}
+		aria-label="Setup saldo awal"
+	>
 		<h2 class="setup-title reveal">Yuk, mulai dari saldo kamu sekarang</h2>
 		<p class="setup-sub reveal">Supaya laporan pengeluaran akurat sejak hari pertama.</p>
 
@@ -465,7 +540,9 @@
 			>
 				<span class="acc-ico debit"><Icon name="credit-card" size={20} /></span>
 				<span class="acc-name">Debit / Bank</span>
-				<span class="acc-val">{currencySymbol(currency)}{(parseNum(rawDebit)).toLocaleString('en-US')}</span>
+				<span class="acc-val"
+					>{currencySymbol(currency)}{parseNum(rawDebit).toLocaleString('en-US')}</span
+				>
 			</button>
 			<button
 				class="stack-card"
@@ -476,27 +553,27 @@
 			>
 				<span class="acc-ico cash"><Icon name="wallet" size={20} /></span>
 				<span class="acc-name">Cash / Tunai</span>
-				<span class="acc-val">{currencySymbol(currency)}{(parseNum(rawCash)).toLocaleString('en-US')}</span>
+				<span class="acc-val"
+					>{currencySymbol(currency)}{parseNum(rawCash).toLocaleString('en-US')}</span
+				>
 			</button>
 		</div>
 
 		<div class="currency-pick reveal">
 			{#each SUPPORTED_CURRENCIES as c (c)}
-				<button class="cur" class:active={c === currency} onclick={() => setCurrency(c)}>{c}</button>
+				<button class="cur" class:active={c === currency} onclick={() => setCurrency(c)}>{c}</button
+				>
 			{/each}
 		</div>
 
 		<div class="keypad-wrap reveal">
-			<AmountKeypad
-				value={activeRaw}
-				{currency}
-				{allowDecimal}
-				onchange={onKeypad}
-			/>
+			<AmountKeypad value={activeRaw} {currency} {allowDecimal} onchange={onKeypad} />
 		</div>
 
 		<div class="setup-actions reveal">
-			<button class="skip-step" onclick={skipSaldo} aria-label="Lewati langkah ini">Lewati langkah ini</button>
+			<button class="skip-step" onclick={skipSaldo} aria-label="Lewati langkah ini"
+				>Lewati langkah ini</button
+			>
 			<button class="finish-btn" disabled={finishing} onclick={finish}>
 				{finishing ? 'Menyiapkan…' : 'Mulai Pakai Spendy'}
 			</button>
@@ -646,7 +723,9 @@
 		height: 7px;
 		border-radius: 999px;
 		background: var(--border);
-		transition: width 0.3s ease, background 0.3s ease;
+		transition:
+			width 0.3s ease,
+			background 0.3s ease;
 		border: none;
 	}
 	.dot.active {
