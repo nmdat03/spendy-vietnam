@@ -25,7 +25,16 @@
 		}
 	});
 
+	function buzz(ms = 8) {
+		try {
+			navigator.vibrate?.(ms);
+		} catch {
+			/* unsupported */
+		}
+	}
+
 	function select() {
+		buzz();
 		onselect(category);
 	}
 </script>

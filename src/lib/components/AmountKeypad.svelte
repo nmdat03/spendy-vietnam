@@ -2,7 +2,8 @@
 	// AmountKeypad: Revolut-style numeric pad — big tabular amount display on
 	// top, flat roomy keys below with a clear press feedback (bg flash + GSAP
 	// pop). API is FROZEN (value / currency / allowDecimal / onchange): this
-	// component is also used by onboarding and the money pages.
+	// component is also used by onboarding and the money pages. `accent` is an
+	// optional extra (CSS color) that tints the amount display.
 	import { gsap, EASES } from '$lib/animations/gsap';
 	import { motionReduced } from '$lib/state/settings.svelte';
 	import { currencySymbol } from '$lib/format/currency';
@@ -12,8 +13,10 @@
 		currency: string;
 		allowDecimal: boolean;
 		onchange: (v: string) => void;
+		/** Optional CSS color for the amount display (e.g. green for income). */
+		accent?: string;
 	}
-	let { value, currency, allowDecimal, onchange }: Props = $props();
+	let { value, currency, allowDecimal, onchange, accent = '' }: Props = $props();
 
 	// Display value formatted with thousand separators.
 	const display = $derived(formatDisplay(value));
@@ -27,6 +30,34 @@
 		return grouped;
 	}
 
+	// Light haptic tick where the platform supports it (Android/Chrome PWA).
+	function buzz(ms = 8) {
+		try {
+			navigator.vibrate?.(ms);
+		} catch {
+			/* unsupported — silent */
+		}
+	}
+
+	let amtEl = $state<HTMLElement | null>(null);
+	let firstRender = true;
+
+	// Tiny rise+settle on the amount every time the typed value changes —
+	// makes the display feel responsive to every keypress.
+	$effect(() => {
+		display;
+		if (firstRender) {
+			firstRender = false;
+			return;
+		}
+		if (!amtEl || motionReduced()) return;
+		gsap.fromTo(
+			amtEl,
+			{ y: 6, opacity: 0.55 },
+			{ y: 0, opacity: 1, duration: 0.24, ease: EASES.out, clearProps: 'y,opacity' }
+		);
+	});
+
 	function pop(el: EventTarget | null) {
 		if (!el || motionReduced()) return;
 		const target = el as HTMLElement;
@@ -39,6 +70,7 @@
 
 	function press(d: string, e: MouseEvent) {
 		pop(e.currentTarget);
+		buzz();
 		// Reject leading zeros / multiple decimal points.
 		if (d === '.') {
 			if (!allowDecimal || value.includes('.')) return;
@@ -51,11 +83,13 @@
 
 	function backspace(e: MouseEvent) {
 		pop(e.currentTarget);
+		buzz();
 		onchange(value.slice(0, -1));
 	}
 
 	function clearAll(e: MouseEvent) {
 		pop(e.currentTarget);
+		buzz(14);
 		onchange('');
 	}
 
@@ -64,8 +98,14 @@
 
 <div class="keypad">
 	<div class="display" aria-live="polite">
-		<span class="sym t-num">{currencySymbol(currency)}</span>
-		<span class="amt t-num" class:placeholder={!display}>{display || '0'}</span>
+		<span class="sym t-num" class:tinted={!!accent}>{currencySymbol(currency)}</span>
+		<span
+			class="amt t-num"
+			class:placeholder={!display}
+			class:tinted={!!accent}
+			style:color={accent || undefined}
+			bind:this={amtEl}>{display || '0'}</span
+		>
 	</div>
 
 	<div class="grid">
@@ -117,11 +157,16 @@
 		font-weight: 650;
 		color: var(--muted-foreground);
 		letter-spacing: -0.01em;
+		transition: color 0.3s ease;
+	}
+	.sym.tinted {
+		color: var(--text-3);
 	}
 	.amt {
 		font-size: clamp(42px, 12.5vw, 54px);
 		font-weight: 700;
 		color: var(--foreground);
+		transition: color 0.3s ease;
 	}
 	.amt.placeholder {
 		color: var(--text-3);

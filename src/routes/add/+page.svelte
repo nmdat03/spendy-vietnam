@@ -85,8 +85,46 @@
 		});
 	});
 
+	function buzz(pattern: number | number[] = 8) {
+		try {
+			navigator.vibrate?.(pattern);
+		} catch {
+			/* unsupported */
+		}
+	}
+
 	let phase = $state<'idle' | 'loading' | 'done'>('idle');
 	let submitBtn = $state<HTMLElement | null>(null);
+	let wasSavable = false;
+
+	// Pulse the save pill the moment the entry becomes savable — a quiet
+	// "ready" cue that pairs with the haptic tick.
+	$effect(() => {
+		if (canSave && !wasSavable && phase === 'idle') {
+			buzz(12);
+			if (submitBtn && !motionReduced()) {
+				gsap.fromTo(
+					submitBtn,
+					{ scale: 0.97 },
+					{ scale: 1, duration: 0.45, ease: EASES.outBack, clearProps: 'scale' }
+				);
+				const btn = submitBtn.querySelector('button');
+				if (btn) {
+					gsap.fromTo(
+						btn,
+						{ boxShadow: '0 0 0 0 color-mix(in srgb, var(--violet) 45%, transparent)' },
+						{
+							boxShadow: '0 0 0 14px color-mix(in srgb, var(--violet) 0%, transparent)',
+							duration: 0.7,
+							ease: 'power2.out',
+							clearProps: 'boxShadow'
+						}
+					);
+				}
+			}
+		}
+		wasSavable = canSave;
+	});
 
 	async function submit() {
 		if (phase !== 'idle') return;
@@ -103,6 +141,7 @@
 		});
 		await new Promise((r) => setTimeout(r, 350));
 		phase = 'done';
+		buzz([14, 40, 22]);
 		if (submitBtn && !motionReduced()) {
 			gsap.fromTo(
 				submitBtn,
@@ -170,18 +209,26 @@
 			/>
 		</div>
 
-		<AmountKeypad value={rawAmount} {currency} {allowDecimal} onchange={(v) => (rawAmount = v)} />
+		<AmountKeypad
+			value={rawAmount}
+			{currency}
+			{allowDecimal}
+			onchange={(v) => (rawAmount = v)}
+			accent={jenis === 'income' ? 'var(--success)' : ''}
+		/>
 
 		<div class="cats" data-enter>
 			<span class="micro-label cats-label">Kategori</span>
-			<div class="chips no-scrollbar">
-				{#each filteredCats as c (c.id)}
-					<CategoryChip category={c} selected={categoryId === c.id} onselect={selectCategory} />
-				{/each}
-				{#if filteredCats.length === 0}
-					<span class="empty-cats">Belum ada kategori untuk jenis ini</span>
-				{/if}
-			</div>
+			{#key jenis}
+				<div class="chips no-scrollbar animate-pop-in">
+					{#each filteredCats as c (c.id)}
+						<CategoryChip category={c} selected={categoryId === c.id} onselect={selectCategory} />
+					{/each}
+					{#if filteredCats.length === 0}
+						<span class="empty-cats">Belum ada kategori untuk jenis ini</span>
+					{/if}
+				</div>
+			{/key}
 		</div>
 
 		<div class="details" data-enter>
@@ -240,7 +287,12 @@
 		</div>
 
 		<div class="save-wrap" bind:this={submitBtn} data-enter>
-			<Button size="lg" class="w-full" disabled={!canSave || phase !== 'idle'} onclick={submit}>
+			<Button
+				size="lg"
+				class="save-btn w-full {jenis === 'income' ? 'income' : ''}"
+				disabled={!canSave || phase !== 'idle'}
+				onclick={submit}
+			>
 				{#if phase === 'idle'}
 					{saveLabel}
 				{:else if phase === 'loading'}
@@ -405,6 +457,13 @@
 		margin-top: 16px;
 		padding: 12px 0 4px;
 		background: linear-gradient(to top, var(--card) 72%, transparent);
+	}
+	/* Income saves confirm in green, matching the tinted amount display. */
+	.save-wrap :global(button.income) {
+		background-color: var(--success);
+	}
+	.save-wrap :global(button.income:disabled) {
+		opacity: 0.45;
 	}
 	.ok {
 		display: inline-flex;

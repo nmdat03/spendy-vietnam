@@ -83,7 +83,8 @@
 <style>
 	.app-shell {
 		position: relative;
-		z-index: 1;
+		/* No z-index here: a z-index would create a stacking context that traps
+		   modal sheets (BottomSheet z-51, Dialog z-50) below the dock (z-40). */
 		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
