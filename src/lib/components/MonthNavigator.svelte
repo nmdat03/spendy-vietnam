@@ -51,30 +51,34 @@
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		gap: 10px;
+		gap: 8px;
 	}
 	.btn {
-		width: 34px;
-		height: 34px;
+		width: 36px;
+		height: 36px;
 		border-radius: 999px;
-		background: var(--surface);
+		background: var(--card);
+		border: 1px solid var(--border);
 		box-shadow: var(--shadow-sm);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		color: var(--text);
+		color: var(--foreground);
 	}
 	.btn:disabled {
 		opacity: 0.35;
 	}
 	.pill {
-		background: var(--surface);
+		background: var(--card);
+		border: 1px solid var(--border);
 		box-shadow: var(--shadow-sm);
 		border-radius: 999px;
 		padding: 8px 18px;
 		font-size: 14px;
 		font-weight: 700;
+		letter-spacing: -0.01em;
 		min-width: 150px;
 		text-align: center;
+		font-variant-numeric: tabular-nums;
 	}
 </style>

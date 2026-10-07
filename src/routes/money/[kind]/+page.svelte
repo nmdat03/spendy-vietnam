@@ -1,7 +1,7 @@
 <script lang="ts">
 	// Money Movement detail page. Shared by /money/in and /money/spent.
-	// Big monthly bar chart (active month highlighted) + transactions list +
-	// month navigator. Tapping a segment switches kind.
+	// Hero total (big ink numerals) + violet monthly bar chart + transactions
+	// list + month navigator. Tapping a segment switches kind.
 	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
@@ -22,7 +22,6 @@
 	// Derive kind from the route param.
 	const kind = $derived($page.params.kind === 'in' ? 'in' : 'spent');
 	const txType = $derived(kind === 'in' ? 'income' : 'expense');
-	const color = $derived(kind === 'in' ? 'var(--green)' : 'var(--red)');
 	const title = $derived(kind === 'in' ? 'Money in' : 'Money spent');
 
 	// Last 6 months of totals for the bar chart, with the active month highlighted.
@@ -55,6 +54,14 @@
 	);
 
 	const total = $derived(kind === 'in' ? data.monthIn : data.monthSpent);
+
+	const formattedTotal = $derived(
+		new Intl.NumberFormat('en-US', {
+			style: 'currency',
+			currency: settings.value.defaultCurrency,
+			maximumFractionDigits: settings.value.defaultCurrency === 'IDR' ? 0 : 2
+		}).format(total)
+	);
 
 	function switchKind(v: string) {
 		void goto(`/money/${v}`);
@@ -90,26 +97,27 @@
 		/>
 	</div>
 
-	<h1 class="title reveal">{title}</h1>
-	<div class="total reveal">
-		{new Intl.NumberFormat('en-US', {
-			style: 'currency',
-			currency: settings.value.defaultCurrency,
-			maximumFractionDigits: settings.value.defaultCurrency === 'IDR' ? 0 : 2
-		}).format(total)}
-	</div>
-	<div class="month-label reveal">{monthLabel(activeMonth.value)}</div>
+	<header class="hero reveal">
+		<span class="micro-label">{title}</span>
+		<h1 class="total t-num">{formattedTotal}</h1>
+		<div class="month-label">{monthLabel(activeMonth.value)}</div>
+	</header>
 
-	<div class="chart-card card reveal">
-		<BarChart bars={monthBars} height={170} {color} />
-	</div>
+	<section class="card chart-card reveal">
+		<div class="chart-head">
+			<span class="micro-label">6 bulan terakhir</span>
+		</div>
+		<BarChart bars={monthBars} height={170} color="var(--violet)" />
+	</section>
 
 	<div class="month-row reveal"><MonthNavigator /></div>
 
 	<section class="card list reveal">
 		<div class="list-head">
-			<h3>Transaksi</h3>
-			<span class="count">{listTxs.length}</span>
+			<span class="micro-label">Transaksi</span>
+			{#if listTxs.length > 0}
+				<span class="count t-num">{listTxs.length}</span>
+			{/if}
 		</div>
 		{#if listTxs.length === 0}
 			<p class="empty">
@@ -141,70 +149,71 @@
 	.money {
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
+		gap: 14px;
 	}
 	.tabs {
 		display: flex;
 		justify-content: center;
-		padding: 4px 0 8px;
+		padding: 2px 0;
 	}
-	.title {
+	.hero {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 5px;
 		text-align: center;
-		font-size: 26px;
-		font-weight: 800;
-		letter-spacing: -0.02em;
-		margin: 4px 0 2px;
+		padding: 6px 0 2px;
 	}
 	.total {
-		text-align: center;
-		font-size: 38px;
+		margin: 2px 0 0;
+		font-size: clamp(40px, 11vw, 50px);
 		font-weight: 800;
-		letter-spacing: -0.02em;
-		font-variant-numeric: tabular-nums;
+		line-height: 1.04;
+		color: var(--foreground);
 	}
 	.month-label {
-		text-align: center;
 		font-size: 13px;
-		color: var(--text-3);
 		font-weight: 600;
-		text-transform: uppercase;
-		letter-spacing: 0.05em;
-		margin-bottom: 6px;
+		color: var(--muted-foreground);
 	}
 	.chart-card {
-		padding: 18px 16px 14px;
+		padding: 16px 14px 12px;
+		box-shadow: var(--shadow-md);
+	}
+	.chart-head {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 2px 4px 12px;
 	}
 	.month-row {
 		display: flex;
 		justify-content: center;
-		padding: 6px 0;
+		padding: 2px 0;
 	}
 	.list {
-		padding: 14px 16px 10px;
+		padding: 4px 16px 10px;
+		box-shadow: var(--shadow-md);
 	}
 	.list-head {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 6px;
-	}
-	.list-head h3 {
-		margin: 0;
-		font-size: 15px;
-		font-weight: 700;
+		padding: 12px 0 6px;
 	}
 	.count {
 		font-size: 12px;
 		font-weight: 700;
-		color: var(--text-3);
-		background: var(--surface-2);
-		padding: 2px 8px;
+		color: var(--muted-foreground);
+		background: var(--muted);
+		padding: 3px 9px;
 		border-radius: 999px;
 	}
 	.empty {
+		margin: 0;
 		font-size: 13px;
-		color: var(--text-2);
+		color: var(--muted-foreground);
 		text-align: center;
-		padding: 18px 0;
+		padding: 20px 0 16px;
 	}
 </style>

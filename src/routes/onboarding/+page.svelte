@@ -21,6 +21,7 @@
 	import AmountKeypad from '$lib/components/AmountKeypad.svelte';
 	import SlotNumber from '$lib/components/SlotNumber.svelte';
 	import Icon from '$lib/components/Icon.svelte';
+	import { Button } from '$lib/components/ui/button';
 
 	type Phase = 'intro' | 'carousel' | 'name' | 'setup';
 	let phase = $state<Phase>('intro');
@@ -350,8 +351,8 @@
 				<svg viewBox="0 0 512 512" width="84" height="84" aria-hidden="true">
 					<defs>
 						<linearGradient id="obg" x1="0" y1="0" x2="1" y2="1">
-							<stop offset="0%" stop-color="#60a5fa" />
-							<stop offset="100%" stop-color="#2563eb" />
+							<stop offset="0%" stop-color="#a78bfa" />
+							<stop offset="100%" stop-color="#6d28d9" />
 						</linearGradient>
 					</defs>
 					<rect x="6" y="6" width="500" height="500" rx="120" fill="#0b0f17" />
@@ -362,7 +363,7 @@
 						<path
 							d="M40 168 L120 96 L180 140 L256 56"
 							fill="none"
-							stroke="#f472b6"
+							stroke="#ffffff"
 							stroke-width="16"
 							stroke-linecap="round"
 							stroke-linejoin="round"
@@ -374,7 +375,9 @@
 				{#each wordLetters as l, i (i)}<span>{l}</span>{/each}
 			</h1>
 			<p class="tagline" bind:this={taglineEl}>Track your spending</p>
-			<button class="tap-hint" onclick={goCarousel}>Mulai</button>
+			<div class="intro-cta">
+				<Button size="lg" class="min-w-[200px]" onclick={goCarousel}>Mulai</Button>
+			</div>
 		</div>
 	</section>
 
@@ -385,7 +388,26 @@
 		bind:this={carouselEl}
 		aria-label="Pengenalan"
 	>
-		<button class="skip" onclick={() => transitionTo('name')} aria-label="Lewati">Lewati</button>
+		<div class="back">
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label="Kembali"
+				onclick={() => transitionTo('intro')}
+			>
+				<Icon name="chevron-left" size={18} />
+			</Button>
+		</div>
+		<div class="skip">
+			<Button
+				variant="ghost"
+				size="sm"
+				class="text-muted-foreground"
+				onclick={() => transitionTo('name')}
+			>
+				Lewati
+			</Button>
+		</div>
 
 		<div
 			class="viewport"
@@ -433,9 +455,23 @@
 									stroke-linejoin="round"
 								>
 									<circle class="draw" cx="100" cy="100" r="70" stroke="var(--border)" />
-									<path class="draw" d="M100 30 a70 70 0 0 1 60 106" stroke="var(--blue)" />
-									<line class="draw" x1="100" y1="100" x2="100" y2="30" stroke="var(--text-3)" />
-									<line class="draw" x1="100" y1="100" x2="160" y2="136" stroke="var(--text-3)" />
+									<path class="draw" d="M100 30 a70 70 0 0 1 60 106" stroke="var(--violet)" />
+									<line
+										class="draw"
+										x1="100"
+										y1="100"
+										x2="100"
+										y2="30"
+										stroke="var(--muted-foreground)"
+									/>
+									<line
+										class="draw"
+										x1="100"
+										y1="100"
+										x2="160"
+										y2="136"
+										stroke="var(--muted-foreground)"
+									/>
 								</svg>
 							{:else}
 								<svg
@@ -450,7 +486,7 @@
 									<path
 										class="draw"
 										d="M100 30 l56 22 v50 c0 38 -56 66 -56 66 s-56 -28 -56 -66 v-50 z"
-										stroke="var(--blue)"
+										stroke="var(--violet)"
 									/>
 									<path class="draw" d="M74 100 l18 18 l34 -38" stroke="var(--green)" />
 								</svg>
@@ -474,13 +510,15 @@
 			{/each}
 		</div>
 
-		<button class="next-btn" onclick={nextSlide}>
-			{#if isLastSlide}
-				Mulai
-			{:else}
-				Lanjut
-			{/if}
-		</button>
+		<div class="cta-row">
+			<Button size="lg" class="w-full" onclick={nextSlide}>
+				{#if isLastSlide}
+					Mulai
+				{:else}
+					Lanjut
+				{/if}
+			</Button>
+		</div>
 	</section>
 
 	<!-- Name input -->
@@ -490,6 +528,16 @@
 		bind:this={nameEl}
 		aria-label="Masukkan nama"
 	>
+		<div class="back">
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label="Kembali"
+				onclick={() => transitionTo('carousel')}
+			>
+				<Icon name="chevron-left" size={18} />
+			</Button>
+		</div>
 		<h2 class="setup-title reveal">Hai, siapa nama kamu?</h2>
 		<p class="setup-sub reveal">
 			Masukkan nama panggilanmu supaya kami bisa menyapa dengan personal.
@@ -504,11 +552,14 @@
 				onkeydown={(e) => e.key === 'Enter' && userName.trim() && transitionTo('setup')}
 			/>
 		</div>
-		<button
-			class="next-btn reveal"
-			disabled={!userName.trim()}
-			onclick={() => transitionTo('setup')}>Lanjut</button
-		>
+		<div class="cta-row reveal">
+			<Button
+				size="lg"
+				class="w-full"
+				disabled={!userName.trim()}
+				onclick={() => transitionTo('setup')}>Lanjut</Button
+			>
+		</div>
 	</section>
 
 	<!-- C. Setup Saldo Awal -->
@@ -518,13 +569,23 @@
 		bind:this={setupEl}
 		aria-label="Setup saldo awal"
 	>
+		<div class="back">
+			<Button
+				variant="ghost"
+				size="icon-sm"
+				aria-label="Kembali"
+				onclick={() => transitionTo('name')}
+			>
+				<Icon name="chevron-left" size={18} />
+			</Button>
+		</div>
 		<h2 class="setup-title reveal">Yuk, mulai dari saldo kamu sekarang</h2>
 		<p class="setup-sub reveal">Supaya laporan pengeluaran akurat sejak hari pertama.</p>
 
 		<!-- Total preview with SlotNumber reveal. -->
 		<div class="total-card reveal" bind:this={totalCardEl}>
-			<span class="total-label">Saldo Awal Total</span>
-			<div class="total-value">
+			<span class="micro-label">Saldo Awal Total</span>
+			<div class="total-value t-num">
 				<SlotNumber value={totalSaldo} {currency} duration={1.1} stagger={0.05} />
 			</div>
 		</div>
@@ -559,7 +620,7 @@
 			</button>
 		</div>
 
-		<div class="currency-pick reveal">
+		<div class="currency-pick reveal no-scrollbar">
 			{#each SUPPORTED_CURRENCIES as c (c)}
 				<button class="cur" class:active={c === currency} onclick={() => setCurrency(c)}>{c}</button
 				>
@@ -571,12 +632,18 @@
 		</div>
 
 		<div class="setup-actions reveal">
-			<button class="skip-step" onclick={skipSaldo} aria-label="Lewati langkah ini"
-				>Lewati langkah ini</button
+			<Button
+				variant="ghost"
+				size="sm"
+				class="text-muted-foreground"
+				onclick={skipSaldo}
+				aria-label="Lewati langkah ini"
 			>
-			<button class="finish-btn" disabled={finishing} onclick={finish}>
+				Lewati langkah ini
+			</Button>
+			<Button size="lg" class="w-full" disabled={finishing} onclick={finish}>
 				{finishing ? 'Menyiapkan…' : 'Mulai Pakai Spendy'}
-			</button>
+			</Button>
 		</div>
 	</section>
 </div>
@@ -620,18 +687,19 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 14px;
+		gap: 16px;
 	}
 	.logo {
 		display: flex;
 		justify-content: center;
+		filter: drop-shadow(0 20px 36px oklch(0.55 0.19 285 / 0.28));
 	}
 	.wordmark {
 		margin: 0;
-		font-size: 44px;
+		font-size: 48px;
 		font-weight: 800;
-		letter-spacing: -0.02em;
-		color: var(--text);
+		letter-spacing: -0.03em;
+		color: var(--foreground);
 	}
 	.wordmark :global(span) {
 		display: inline-block;
@@ -639,18 +707,26 @@
 	.tagline {
 		margin: 0;
 		font-size: 15px;
-		color: var(--text-2);
+		color: var(--muted-foreground);
 		font-weight: 500;
+		letter-spacing: 0.01em;
 	}
-	.tap-hint {
-		margin-top: 24px;
-		padding: 11px 28px;
-		border-radius: 999px;
-		background: #0b0f17;
-		color: #fff;
-		font-weight: 700;
-		font-size: 15px;
-		box-shadow: var(--shadow-md);
+	.intro-cta {
+		margin-top: 26px;
+	}
+
+	/* Top corner nav: small back (left) / skip (right). */
+	.back {
+		position: absolute;
+		top: calc(10px + var(--safe-top));
+		left: 10px;
+		z-index: 6;
+	}
+	.skip {
+		position: absolute;
+		top: calc(16px + var(--safe-top));
+		right: 14px;
+		z-index: 6;
 	}
 
 	/* Carousel */
@@ -658,15 +734,6 @@
 		justify-content: flex-start;
 		gap: 0;
 		padding-top: calc(60px + var(--safe-top));
-	}
-	.skip {
-		position: absolute;
-		top: calc(16px + var(--safe-top));
-		right: 20px;
-		font-size: 13px;
-		font-weight: 600;
-		color: var(--text-2);
-		padding: 6px 10px;
 	}
 	.viewport {
 		overflow: hidden;
@@ -691,58 +758,52 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 18px;
+		gap: 20px;
 		padding: 0 20px;
 		text-align: center;
 	}
 	.illus {
-		color: var(--text-3);
+		color: var(--muted-foreground);
 	}
 	.slide-title {
 		margin: 0;
-		font-size: 22px;
+		font-size: 24px;
 		font-weight: 800;
-		letter-spacing: -0.01em;
-		color: var(--text);
+		letter-spacing: -0.02em;
+		color: var(--foreground);
 	}
 	.slide-desc {
 		margin: 0;
 		font-size: 14px;
-		color: var(--text-2);
-		line-height: 1.5;
+		color: var(--muted-foreground);
+		line-height: 1.55;
 		max-width: 280px;
 	}
 	.dots {
 		display: flex;
-		gap: 8px;
+		gap: 7px;
 		justify-content: center;
-		padding: 18px 0 14px;
+		padding: 18px 0 16px;
 	}
 	.dot {
-		width: 7px;
-		height: 7px;
+		width: 6px;
+		height: 6px;
+		padding: 0;
 		border-radius: 999px;
 		background: var(--border);
 		transition:
-			width 0.3s ease,
+			width 0.3s cubic-bezier(0.22, 1, 0.36, 1),
 			background 0.3s ease;
 		border: none;
 	}
 	.dot.active {
-		width: 22px;
-		background: #0b0f17;
+		width: 24px;
+		background: var(--violet);
 	}
-	.next-btn {
+	.cta-row {
 		width: 100%;
-		max-width: 320px;
-		height: 52px;
-		border-radius: 16px;
-		background: #0b0f17;
-		color: #fff;
-		font-weight: 700;
-		font-size: 16px;
-		box-shadow: var(--shadow-md);
-		margin: 0 auto 8px;
+		max-width: 360px;
+		padding-bottom: 10px;
 	}
 
 	/* Setup */
@@ -758,23 +819,24 @@
 		flex-shrink: 0;
 	}
 	.setup-title {
-		margin: 4px 0 0;
-		font-size: 22px;
+		margin: 6px 0 0;
+		font-size: 26px;
 		font-weight: 800;
 		text-align: center;
-		letter-spacing: -0.01em;
+		letter-spacing: -0.02em;
+		color: var(--foreground);
 	}
 	.setup-sub {
 		margin: 0;
-		font-size: 13px;
-		color: var(--text-2);
+		font-size: 13.5px;
+		color: var(--muted-foreground);
 		text-align: center;
 	}
 	/* Name phase */
 	.name-input-wrap {
 		width: 100%;
 		max-width: 340px;
-		margin-top: 12px;
+		margin-top: 14px;
 		flex-shrink: 0;
 	}
 	.name-input {
@@ -783,47 +845,47 @@
 		font-size: 22px;
 		font-weight: 700;
 		padding: 16px 20px;
-		border-radius: var(--r-lg);
-		border: 2px solid var(--border);
-		background: var(--surface);
-		color: var(--text);
+		border-radius: var(--r-md);
+		border: 1.5px solid var(--border);
+		background: var(--card);
+		color: var(--foreground);
 		outline: none;
-		transition: border-color 0.2s ease;
+		transition:
+			border-color 0.2s ease,
+			box-shadow 0.2s ease;
 	}
 	.name-input:focus {
-		border-color: var(--blue);
+		border-color: var(--violet);
+		box-shadow: 0 0 0 4px color-mix(in oklab, var(--violet) 14%, transparent);
 	}
 	.name-input::placeholder {
-		color: var(--text-3);
+		color: var(--muted-foreground);
 		font-weight: 500;
+		opacity: 0.7;
 	}
 	.total-card {
 		width: 100%;
 		max-width: 360px;
-		background: var(--surface);
+		background: var(--card);
+		border: 1px solid var(--border);
 		border-radius: var(--r-lg);
 		box-shadow: var(--shadow-md);
-		padding: 18px 22px;
+		padding: 18px 22px 20px;
 		display: flex;
 		flex-direction: column;
 		gap: 6px;
 		text-align: center;
 	}
-	.total-label {
-		font-size: 12px;
-		color: var(--text-2);
-		font-weight: 600;
-	}
 	.total-value {
-		font-size: 30px;
+		font-size: 32px;
 		font-weight: 800;
-		letter-spacing: -0.02em;
+		color: var(--foreground);
 	}
 	.stack {
 		position: relative;
 		width: 100%;
 		max-width: 360px;
-		height: 96px;
+		height: 98px;
 		flex-shrink: 0;
 	}
 	.stack-card {
@@ -832,13 +894,13 @@
 		right: 0;
 		display: flex;
 		align-items: center;
-		gap: 10px;
-		height: 76px;
+		gap: 12px;
+		height: 78px;
 		padding: 0 16px;
 		border-radius: var(--r-md);
-		background: var(--surface);
+		background: var(--card);
+		border: 1.5px solid var(--border);
 		box-shadow: var(--shadow-sm);
-		border: 2px solid transparent;
 		text-align: left;
 	}
 	/* Initial stacked positions (debit front, cash behind) — matches the default
@@ -852,7 +914,8 @@
 		opacity: 0.85;
 	}
 	.stack-card.active {
-		border-color: var(--blue);
+		border-color: var(--violet);
+		box-shadow: var(--shadow-md);
 	}
 	.acc-ico {
 		width: 38px;
@@ -865,7 +928,7 @@
 		flex-shrink: 0;
 	}
 	.acc-ico.debit {
-		background: var(--blue);
+		background: var(--violet);
 	}
 	.acc-ico.cash {
 		background: var(--green);
@@ -873,13 +936,13 @@
 	.acc-name {
 		font-size: 14px;
 		font-weight: 700;
-		color: var(--text);
+		color: var(--foreground);
 	}
 	.acc-val {
 		margin-left: auto;
 		font-size: 14px;
-		font-weight: 700;
-		color: var(--text-2);
+		font-weight: 650;
+		color: var(--muted-foreground);
 		font-variant-numeric: tabular-nums;
 	}
 	.currency-pick {
@@ -890,28 +953,27 @@
 		width: 100%;
 		max-width: 360px;
 		flex-shrink: 0;
-	}
-	.currency-pick::-webkit-scrollbar {
-		display: none;
+		padding-bottom: 2px;
 	}
 	.cur {
 		flex-shrink: 0;
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		height: 34px;
+		height: 32px;
 		line-height: 1;
 		padding: 0 14px;
 		border-radius: 999px;
-		background: var(--surface);
-		box-shadow: var(--shadow-sm);
+		background: var(--card);
+		border: 1px solid var(--border);
 		font-size: 12px;
 		font-weight: 700;
-		color: var(--text);
+		color: var(--muted-foreground);
 	}
 	.cur.active {
-		background: #0b0f17;
-		color: #fff;
+		background: var(--foreground);
+		border-color: var(--foreground);
+		color: var(--background);
 	}
 	.keypad-wrap {
 		width: 100%;
@@ -922,25 +984,7 @@
 		max-width: 360px;
 		display: flex;
 		flex-direction: column;
-		gap: 10px;
-		padding-bottom: 8px;
-	}
-	.skip-step {
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--text-3);
-		padding: 6px;
-	}
-	.finish-btn {
-		height: 52px;
-		border-radius: 16px;
-		background: #0b0f17;
-		color: #fff;
-		font-weight: 700;
-		font-size: 16px;
-		box-shadow: var(--shadow-md);
-	}
-	.finish-btn:disabled {
-		opacity: 0.5;
+		gap: 8px;
+		padding-bottom: 10px;
 	}
 </style>

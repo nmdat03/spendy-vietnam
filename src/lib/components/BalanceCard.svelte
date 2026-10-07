@@ -6,6 +6,7 @@
 	import { gsap, EASES } from '$lib/animations/gsap';
 	import { motionReduced } from '$lib/state/settings.svelte';
 	import SlotNumber from './SlotNumber.svelte';
+	import Icon from './Icon.svelte';
 
 	interface TrendPoint {
 		label: string;
@@ -75,30 +76,33 @@
 	onMount(() => {});
 </script>
 
-<div class="card balance">
-	<div class="head">
-		<span class="label">Total Balance</span>
-		<div class="period">
+<div class="card p-5">
+	<div class="flex items-center justify-between gap-2">
+		<span class="micro-label inline-flex items-center gap-1.5">
+			<span class="inline-block size-1.5 rounded-full bg-violet"></span>
+			Total Balance
+		</span>
+		<div class="relative">
 			<button
-				class="period-btn"
+				class="inline-flex items-center gap-1 rounded-full bg-secondary px-3 py-1.5 text-[12px] font-bold tracking-tight text-secondary-foreground"
 				onclick={() => (open = !open)}
 				aria-haspopup="true"
 				aria-expanded={open}
 			>
-				{period}<svg
-					width="12"
-					height="12"
-					viewBox="0 0 24 24"
-					fill="none"
-					stroke="currentColor"
-					stroke-width="3"><polyline points="6 9 12 15 18 9"></polyline></svg
-				>
+				{period}
+				<Icon name="chevron-down" size={12} strokeWidth={3} />
 			</button>
 			{#if open}
-				<div class="period-menu" role="menu">
+				<div
+					class="absolute top-[calc(100%+6px)] right-0 z-10 flex min-w-[92px] animate-pop-in flex-col rounded-[14px] border border-border bg-card p-1 shadow-[var(--shadow-md)]"
+					role="menu"
+				>
 					{#each periods as p (p)}
 						<button
-							class:sel={p === period}
+							class="rounded-[10px] px-3.5 py-2 text-left text-[13px] font-semibold tracking-tight text-foreground {p ===
+							period
+								? 'bg-muted'
+								: ''}"
 							onclick={() => {
 								onPeriodChange(p);
 								open = false;
@@ -111,49 +115,31 @@
 		</div>
 	</div>
 
-	<div class="amount">
+	<div class="t-num mt-4 text-[38px] leading-none font-bold tracking-[-0.03em] text-foreground">
 		<SlotNumber value={balance} {currency} duration={1.6} stagger={0.07} />
 	</div>
 
-	<div class="chips">
-		<span class="chip up">
-			<svg
-				width="11"
-				height="11"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="3"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"
-				></polyline></svg
-			>
+	<div class="mt-3.5 flex items-center gap-2">
+		<span
+			class="t-num inline-flex items-center gap-1 rounded-full bg-[color-mix(in_oklab,var(--success)_14%,var(--card))] px-2.5 py-1 text-[11px] font-bold text-success"
+		>
+			<Icon name="arrow-up-right" size={11} strokeWidth={3} />
 			{changeUp > 0 ? '+' : ''}{changeUp.toFixed(1)}%
 		</span>
-		<span class="chip down">
-			<svg
-				width="11"
-				height="11"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="3"
-				stroke-linecap="round"
-				stroke-linejoin="round"
-				><line x1="7" y1="7" x2="17" y2="17"></line><polyline points="17 7 17 17 7 17"
-				></polyline></svg
-			>
+		<span
+			class="t-num inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-1 text-[11px] font-bold text-secondary-foreground"
+		>
+			<Icon name="arrow-down-right" size={11} strokeWidth={3} />
 			{changeDown > 0 ? '-' : ''}{changeDown.toFixed(1)}%
 		</span>
 	</div>
 
-	<div class="chart">
+	<div class="mt-4 w-full">
 		<svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" width="100%" height={H}>
 			<defs>
 				<linearGradient id="trendArea" x1="0" y1="0" x2="0" y2="1">
-					<stop offset="0%" stop-color="var(--blue)" stop-opacity="0.22"></stop>
-					<stop offset="100%" stop-color="var(--blue)" stop-opacity="0"></stop>
+					<stop offset="0%" stop-color="var(--violet)" stop-opacity="0.2"></stop>
+					<stop offset="100%" stop-color="var(--violet)" stop-opacity="0"></stop>
 				</linearGradient>
 			</defs>
 			{#each trend as p, i (i)}
@@ -163,7 +149,7 @@
 					width="6"
 					height={H - y(p.value)}
 					rx="2"
-					fill="var(--surface-2)"
+					fill="var(--muted)"
 				></rect>
 			{/each}
 			<path d={areaD} fill="url(#trendArea)"></path>
@@ -171,7 +157,7 @@
 				bind:this={linePath}
 				d={lineD}
 				fill="none"
-				stroke="var(--blue)"
+				stroke="var(--violet)"
 				stroke-width="2"
 				stroke-linecap="round"
 				stroke-linejoin="round"
@@ -179,93 +165,3 @@
 		</svg>
 	</div>
 </div>
-
-<style>
-	.balance {
-		padding: 20px 22px 18px;
-		background: linear-gradient(
-			180deg,
-			var(--surface),
-			var(--surface) 60%,
-			color-mix(in srgb, var(--blue) 4%, var(--surface))
-		);
-	}
-	.head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.label {
-		font-size: 13px;
-		color: var(--text-2);
-		font-weight: 600;
-	}
-	.period {
-		position: relative;
-	}
-	.period-btn {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 6px 12px;
-		border-radius: 999px;
-		background: var(--surface-2);
-		font-size: 12px;
-		font-weight: 700;
-		color: var(--text);
-	}
-	.period-menu {
-		position: absolute;
-		top: calc(100% + 6px);
-		right: 0;
-		background: var(--surface);
-		border-radius: 12px;
-		box-shadow: var(--shadow-md);
-		padding: 4px;
-		display: flex;
-		flex-direction: column;
-		z-index: 5;
-	}
-	.period-menu button {
-		padding: 8px 14px;
-		font-size: 13px;
-		font-weight: 600;
-		border-radius: 8px;
-		text-align: left;
-		color: var(--text);
-	}
-	.period-menu button.sel {
-		background: var(--surface-2);
-	}
-	.amount {
-		font-size: 34px;
-		font-weight: 800;
-		margin: 8px 0 10px;
-		letter-spacing: -0.02em;
-	}
-	.chips {
-		display: flex;
-		gap: 8px;
-		margin-bottom: 14px;
-	}
-	.chip {
-		display: inline-flex;
-		align-items: center;
-		gap: 4px;
-		padding: 4px 8px;
-		border-radius: 999px;
-		font-size: 11px;
-		font-weight: 700;
-	}
-	.chip.up {
-		background: color-mix(in srgb, var(--green) 14%, var(--surface));
-		color: var(--green);
-	}
-	.chip.down {
-		background: color-mix(in srgb, var(--red) 14%, var(--surface));
-		color: var(--red);
-	}
-	.chart {
-		width: 100%;
-	}
-</style>

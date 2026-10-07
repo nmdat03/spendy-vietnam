@@ -3,40 +3,14 @@
 	import { onMount } from 'svelte';
 	import { settings, effectiveTheme, motionReduced } from '$lib/state/settings.svelte';
 	import { ensureSeed } from '$lib/db';
-	import { gsap } from '$lib/animations/gsap';
 	import DockNav from '$lib/components/DockNav.svelte';
+	import { Toaster } from '$lib/components/ui/toaster';
 
 	let { children, data } = $props();
 
 	let ready = $state(false);
 	// Onboarding is full-bleed and shows no dock / page wrapper.
 	let onboarding = $derived(data?.onboarded === false);
-
-	let auroraTweens: gsap.core.Tween[] = [];
-
-	function startAurora() {
-		if (motionReduced()) return;
-		stopAurora();
-		const blobs = document.querySelectorAll<HTMLElement>('.aurora-blob');
-		blobs.forEach((b, i) => {
-			const tween = gsap.to(b, {
-				x: i % 2 === 0 ? 40 : -40,
-				y: i % 2 === 0 ? -30 : 30,
-				scale: 1.08 + (i % 3) * 0.06,
-				duration: 18 + i * 4,
-				repeat: -1,
-				yoyo: true,
-				ease: 'sine.inOut'
-			});
-			auroraTweens.push(tween);
-		});
-	}
-
-	function stopAurora() {
-		auroraTweens.forEach((t) => t.kill());
-		auroraTweens = [];
-		gsap.set('.aurora-blob', { clearProps: 'transform' });
-	}
 
 	function hideSplash() {
 		const splash = document.getElementById('splash');
@@ -64,7 +38,6 @@
 			document.removeEventListener('gesturestart', preventGesture);
 			document.removeEventListener('gesturechange', preventGesture);
 			document.removeEventListener('touchmove', preventMultiTouch);
-			stopAurora();
 		};
 	});
 
@@ -72,15 +45,6 @@
 	$effect(() => {
 		if (typeof document !== 'undefined') {
 			document.documentElement.setAttribute('data-theme', effectiveTheme());
-		}
-	});
-
-	// React to the reduce-motion setting dynamically (start/stop ambient aurora).
-	$effect(() => {
-		if (motionReduced()) {
-			stopAurora();
-		} else {
-			startAurora();
 		}
 	});
 
@@ -96,12 +60,7 @@
 	});
 </script>
 
-<div class="mesh-bg" aria-hidden="true">
-	<div class="aurora-blob a"></div>
-	<div class="aurora-blob b"></div>
-	<div class="aurora-blob c"></div>
-	<div class="aurora-blob d"></div>
-</div>
+<div class="bg-glow" aria-hidden="true"></div>
 
 <div class="app-shell" class:onboarding>
 	{#if ready}
@@ -119,9 +78,12 @@
 	<DockNav />
 {/if}
 
+<Toaster />
+
 <style>
 	.app-shell {
 		position: relative;
+		z-index: 1;
 		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
@@ -131,7 +93,7 @@
 		width: 100%;
 		max-width: 440px;
 		margin: 0 auto;
-		padding: calc(16px + var(--safe-top)) 16px calc(120px + var(--safe-bottom));
+		padding: calc(16px + var(--safe-top)) 16px calc(140px + var(--safe-bottom));
 	}
 	.page-full {
 		position: relative;

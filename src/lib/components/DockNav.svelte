@@ -35,12 +35,17 @@
 		activeKey;
 		const target = document.querySelector<HTMLElement>(`[data-dock-key="${activeKey}"]`);
 		if (!target || !pillEl) return;
+		// The center FAB carries its own fill — no pill behind it.
+		if (activeKey === 'add') {
+			gsap.set(pillEl, { opacity: 0 });
+			return;
+		}
 		if (motionReduced()) {
-			gsap.set(pillEl, { left: target.offsetLeft, width: target.offsetWidth });
+			gsap.set(pillEl, { opacity: 1, left: target.offsetLeft, width: target.offsetWidth });
 			return;
 		}
 		const state = Flip.getState(pillEl);
-		gsap.set(pillEl, { left: target.offsetLeft, width: target.offsetWidth });
+		gsap.set(pillEl, { opacity: 1, left: target.offsetLeft, width: target.offsetWidth });
 		Flip.from(state, {
 			duration: 0.42,
 			ease: EASES.outBack,
@@ -55,6 +60,11 @@
 	});
 
 	function go(item: DockItem) {
+		// Tapping the raised FAB while on /add acts like "close" → back home.
+		if (item.center && item.href === currentPath) {
+			void goto('/');
+			return;
+		}
 		if (item.href === currentPath) return;
 		void goto(item.href);
 	}
@@ -73,11 +83,19 @@
 				aria-label={item.label}
 				aria-current={activeKey === item.key ? 'page' : undefined}
 			>
-				<span class="dock-icon">
-					<Icon name={item.icon} size={22} />
-				</span>
-				{#if activeKey === item.key}
-					<span class="label">{item.label}</span>
+				{#if item.center}
+					<span class="fab" class:fab-active={activeKey === item.key}>
+						<span class="dock-icon">
+							<Icon name={activeKey === item.key ? 'x' : 'plus'} size={24} />
+						</span>
+					</span>
+				{:else}
+					<span class="dock-icon">
+						<Icon name={item.icon} size={22} />
+					</span>
+					{#if activeKey === item.key}
+						<span class="label">{item.label}</span>
+					{/if}
 				{/if}
 			</button>
 		{/each}
@@ -98,7 +116,10 @@
 		display: grid;
 		grid-template-columns: 1fr 1fr 1fr;
 		align-items: center;
-		background: #0b0f17;
+		background: color-mix(in srgb, var(--card) 78%, transparent);
+		-webkit-backdrop-filter: blur(24px) saturate(1.5);
+		backdrop-filter: blur(24px) saturate(1.5);
+		border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
 		border-radius: 999px;
 		padding: 8px;
 		box-shadow: var(--shadow-lg);
@@ -110,7 +131,7 @@
 		height: calc(100% - 16px);
 		left: 8px;
 		width: 70px;
-		background: var(--blue);
+		background: var(--secondary);
 		border-radius: 999px;
 		pointer-events: none;
 		z-index: 0;
@@ -125,17 +146,37 @@
 		height: 52px;
 		padding: 0 16px;
 		border-radius: 999px;
-		color: rgba(255, 255, 255, 0.78);
+		color: var(--muted-foreground);
 		transition: color 0.2s ease;
 	}
 	.item.active {
-		color: #fff;
+		color: var(--foreground);
 	}
+	/* Raised center action button — the one bold accent in the dock. */
 	.item.center {
-		background: rgba(255, 255, 255, 0.06);
+		height: auto;
+		padding: 0;
+		background: none;
 	}
-	.item.center.active {
-		background: transparent;
+	.fab {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 56px;
+		height: 56px;
+		border-radius: 999px;
+		color: #fff;
+		background: linear-gradient(140deg, var(--violet), color-mix(in srgb, var(--violet) 72%, #000));
+		box-shadow:
+			0 10px 24px color-mix(in srgb, var(--violet) 38%, transparent),
+			0 2px 6px color-mix(in srgb, var(--violet) 24%, transparent);
+		transform: translateY(-16px);
+		transition: box-shadow 0.25s ease;
+	}
+	.fab-active {
+		box-shadow:
+			0 14px 30px color-mix(in srgb, var(--violet) 46%, transparent),
+			0 0 0 6px color-mix(in srgb, var(--violet) 14%, transparent);
 	}
 	.dock-icon {
 		display: inline-flex;
@@ -146,12 +187,5 @@
 		font-size: 14px;
 		font-weight: 600;
 		white-space: nowrap;
-	}
-	@media (prefers-reduced-motion: reduce) {
-		.pill {
-			transition:
-				left 0.2s ease,
-				width 0.2s ease;
-		}
 	}
 </style>

@@ -1,12 +1,10 @@
 <script lang="ts">
-	// Tambah Catatan: 4-step wizard presented as a slide-up bottom sheet.
+	// Catatan Baru — single-screen quick entry (fintech style, no wizard).
 	//
-	// UX NOTE on step order: the spec lists (1) Nominal, (2) Kategori, (3) Jenis,
-	// (4) Waktu & Catatan, but allows swapping steps 2 & 3 when it yields better
-	// UX. We swap them: Jenis is picked BEFORE Kategori so the category grid can
-	// be filtered to only income/expense categories — avoids picking a category
-	// that doesn't match the chosen type. So our order is:
-	//   Step 1 Nominal → Step 2 Jenis → Step 3 Kategori → Step 4 Waktu & Review.
+	// Vertical flow, thumb-friendly: type switch → big amount + keypad →
+	// category pills → quiet detail rows (account / date-time / note) →
+	// full-width save pill that stays in reach (sticky). Replaces the old
+	// 4-step wizard; all state, validation and db logic is unchanged.
 	import { onDestroy } from 'svelte';
 	import { goto } from '$app/navigation';
 	import { gsap, EASES } from '$lib/animations/gsap';
@@ -19,11 +17,8 @@
 	import AmountKeypad from '$lib/components/AmountKeypad.svelte';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
 	import CategoryChip from '$lib/components/CategoryChip.svelte';
-	import SlotNumber from '$lib/components/SlotNumber.svelte';
 	import Icon from '$lib/components/Icon.svelte';
-
-	let step = $state(0); // 0..3
-	const stepTitles = ['Nominal', 'Jenis', 'Kategori', 'Waktu & Catatan'];
+	import { Button } from '$lib/components/ui/button';
 
 	let rawAmount = $state('');
 	let jenis = $state<TxType>('expense');
@@ -31,6 +26,7 @@
 	let categoryId = $state<number | null>(null);
 	let note = $state('');
 	let when = $state<string>(nowLocal());
+	let whenOpen = $state(false);
 
 	function nowLocal(): string {
 		const d = new Date();
@@ -55,88 +51,38 @@
 	);
 	const amountNum = $derived(Number.parseFloat(rawAmount || '0'));
 
-	const canNext = $derived(
-		(step === 0 && amountNum > 0) ||
-			(step === 1 && !!jenis) ||
-			(step === 2 && categoryId !== null) ||
-			step === 3
+	// Required inputs: amount + category (same rule as the old wizard steps).
+	const canSave = $derived(amountNum > 0 && categoryId !== null);
+
+	const saveLabel = $derived(
+		!canSave && amountNum > 0 ? 'Pilih kategori dulu' : 'Simpan Transaksi'
 	);
 
-	let track = $state<HTMLElement | null>(null);
-	$effect(() => {
-		step;
-		if (!track) return;
-		// Track is 400% wide (4 steps x 25% each), so one step = 25% of the track's
-		// own width. xPercent is relative to the element's width, hence -step * 25.
-		if (motionReduced()) {
-			gsap.set(track, { xPercent: -step * 25 });
-			return;
-		}
-		gsap.to(track, { xPercent: -step * 25, duration: 0.45, ease: EASES.out });
-	});
-
-	function next() {
-		if (!canNext) return;
-		if (step < 3) step++;
-		else submit();
-	}
-	function back() {
-		if (step > 0) step--;
-		else close();
-	}
-	function close() {
-		void goto('/');
+	// Switching type invalidates the picked category (existing behaviour).
+	function pickJenis(v: string) {
+		jenis = v as TxType;
+		categoryId = null;
 	}
 
 	function selectCategory(c: Category) {
 		categoryId = c.id!;
-		if (motionReduced()) {
-			step = 3;
-			return;
-		}
-		setTimeout(() => (step = 3), 420);
 	}
 
-	// Step 2 (Jenis): picking Pemasukan/Pengeluaran auto-advances to Kategori —
-	// no "Lanjut" tap needed. Same pattern as the category step.
-	function pickJenis(v: string) {
-		jenis = v as TxType;
-		categoryId = null;
-		if (motionReduced()) {
-			step = 2;
-			return;
-		}
-		setTimeout(() => {
-			if (step === 1) step = 2;
-		}, 380);
-	}
-
-	let gridEl = $state<HTMLElement | null>(null);
+	// One-shot entrance stagger for the content blocks (keypad stays instant).
+	let entered = false;
+	let bodyEl = $state<HTMLElement | null>(null);
 	$effect(() => {
-		step;
-		if (step === 2 && gridEl && !motionReduced()) {
-			const id = requestAnimationFrame(() => {
-				gsap.from(gridEl!.querySelectorAll('.chip'), {
-					y: 14,
-					opacity: 0,
-					duration: 0.4,
-					ease: EASES.out,
-					stagger: 0.045
-				});
-			});
-			return () => cancelAnimationFrame(id);
-		}
-	});
-
-	let reviewEl = $state<HTMLElement | null>(null);
-	$effect(() => {
-		step;
-		if (step === 3 && reviewEl && !motionReduced()) {
-			const id = requestAnimationFrame(() => {
-				gsap.from(reviewEl, { y: 18, opacity: 0, duration: 0.5, ease: EASES.out });
-			});
-			return () => cancelAnimationFrame(id);
-		}
+		if (!bodyEl || entered) return;
+		entered = true;
+		if (motionReduced()) return;
+		gsap.from(bodyEl.querySelectorAll('[data-enter]'), {
+			y: 16,
+			opacity: 0,
+			duration: 0.5,
+			ease: EASES.out,
+			stagger: 0.07,
+			clearProps: 'all'
+		});
 	});
 
 	let phase = $state<'idle' | 'loading' | 'done'>('idle');
@@ -168,8 +114,12 @@
 		close();
 	}
 
+	function close() {
+		void goto('/');
+	}
+
 	onDestroy(() => {
-		gsap.killTweensOf([track, gridEl, reviewEl, submitBtn].filter(Boolean) as HTMLElement[]);
+		gsap.killTweensOf([bodyEl, submitBtn].filter(Boolean) as HTMLElement[]);
 	});
 
 	const selectedCat = $derived(categories.find((c) => c.id === categoryId));
@@ -199,84 +149,46 @@
 		const d = new Date(`${datePart}T${v || '00:00'}`);
 		when = d.toISOString();
 	}
+
+	const whenLabel = $derived(
+		new Date(when).toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) +
+			' · ' +
+			localTime(when)
+	);
 </script>
 
-<BottomSheet open={true} title={`Tambah Catatan · ${stepTitles[step]}`} onClose={close}>
-	<div class="dots" aria-hidden="true">
-		{#each [0, 1, 2, 3] as i (i)}
-			<span class="dot" class:active={step >= i}></span>
-		{/each}
-	</div>
+<BottomSheet open={true} title="Catatan Baru" onClose={close}>
+	<div class="entry" bind:this={bodyEl}>
+		<div class="type-row" data-enter>
+			<SegmentedControl
+				options={[
+					{ value: 'expense', label: 'Pengeluaran' },
+					{ value: 'income', label: 'Pemasukan' }
+				]}
+				value={jenis}
+				onchange={pickJenis}
+			/>
+		</div>
 
-	<div class="viewport">
-		<div class="track" bind:this={track}>
-			<section class="step">
-				<AmountKeypad
-					value={rawAmount}
-					{currency}
-					{allowDecimal}
-					onchange={(v) => (rawAmount = v)}
-				/>
-			</section>
+		<AmountKeypad value={rawAmount} {currency} {allowDecimal} onchange={(v) => (rawAmount = v)} />
 
-			<section class="step center-vert">
-				<div class="step-title">Pilih jenis transaksi</div>
-				<div class="jenis-cards">
-					<button
-						class="jenis-card expense"
-						class:selected={jenis === 'expense'}
-						onclick={() => pickJenis('expense')}
-					>
-						<span class="jenis-icon"><Icon name="arrow-down-right" size={28} /></span>
-						<span class="jenis-label">Pengeluaran</span>
-					</button>
-					<button
-						class="jenis-card income"
-						class:selected={jenis === 'income'}
-						onclick={() => pickJenis('income')}
-					>
-						<span class="jenis-icon"><Icon name="arrow-up-right" size={28} /></span>
-						<span class="jenis-label">Pemasukan</span>
-					</button>
-				</div>
-				<div class="jenis-hint">Pilih salah satu untuk lanjut</div>
-			</section>
+		<div class="cats" data-enter>
+			<span class="micro-label cats-label">Kategori</span>
+			<div class="chips no-scrollbar">
+				{#each filteredCats as c (c.id)}
+					<CategoryChip category={c} selected={categoryId === c.id} onselect={selectCategory} />
+				{/each}
+				{#if filteredCats.length === 0}
+					<span class="empty-cats">Belum ada kategori untuk jenis ini</span>
+				{/if}
+			</div>
+		</div>
 
-			<section class="step">
-				<div class="step-title">Pilih kategori</div>
-				<div class="grid" bind:this={gridEl}>
-					{#each filteredCats as c (c.id)}
-						<CategoryChip category={c} selected={categoryId === c.id} onselect={selectCategory} />
-					{/each}
-				</div>
-			</section>
-
-			<section class="step">
-				<div class="review-card" bind:this={reviewEl}>
-					<div class="review-amt">
-						<SlotNumber
-							value={jenis === 'income' ? amountNum : -amountNum}
-							{currency}
-							duration={1.3}
-							stagger={0.06}
-						/>
-					</div>
-					<div class="review-meta">
-						<span class="pill" style="--c: {selectedCat?.color ?? '#94a3b8'}">
-							<Icon
-								name={selectedCat?.icon ?? 'circle-ellipsis'}
-								size={14}
-								color={selectedCat?.color ?? '#94a3b8'}
-							/>
-							{selectedCat?.name ?? 'Uncategorized'}
-						</span>
-						<span class="pill-type">{jenis === 'income' ? 'Pemasukan' : 'Pengeluaran'}</span>
-						<span class="pill-type acc">{account === 'cash' ? 'Cash' : 'Debit'}</span>
-					</div>
-				</div>
-
-				<div class="field full">
-					<span class="flabel">Akun</span>
+		<div class="details" data-enter>
+			<div class="d-row">
+				<span class="d-icon"><Icon name="wallet" size={14} /></span>
+				<span class="d-label">Akun</span>
+				<div class="d-ctrl">
 					<SegmentedControl
 						options={[
 							{ value: 'cash', label: 'Cash' },
@@ -287,10 +199,21 @@
 						size="sm"
 					/>
 				</div>
+			</div>
 
-				<div class="field-row">
-					<label class="field">
-						<span class="flabel">Tanggal</span>
+			<div class="d-row">
+				<span class="d-icon"><Icon name="calendar-days" size={14} /></span>
+				<span class="d-label">Waktu</span>
+				<button class="d-toggle" onclick={() => (whenOpen = !whenOpen)} aria-expanded={whenOpen}>
+					<span class="d-value t-num">{whenLabel}</span>
+					<span class="chev" class:open={whenOpen}><Icon name="chevron-down" size={14} /></span>
+				</button>
+			</div>
+
+			{#if whenOpen}
+				<div class="when-grid animate-pop-in">
+					<label class="wfield">
+						<span class="micro-label">Tanggal</span>
 						<input
 							class="finput"
 							type="date"
@@ -298,8 +221,8 @@
 							oninput={(e) => onDate(e.currentTarget.value)}
 						/>
 					</label>
-					<label class="field">
-						<span class="flabel">Jam</span>
+					<label class="wfield">
+						<span class="micro-label">Jam</span>
 						<input
 							class="finput"
 							type="time"
@@ -308,25 +231,18 @@
 						/>
 					</label>
 				</div>
-				<label class="field full">
-					<span class="flabel">Catatan (opsional)</span>
-					<input class="finput" type="text" placeholder="Tambahkan catatan…" bind:value={note} />
-				</label>
-			</section>
-		</div>
-	</div>
+			{/if}
 
-	<div class="actions">
-		<button class="btn ghost" onclick={back}>{step === 0 ? 'Batal' : 'Kembali'}</button>
-		{#if step === 0 || step === 3}
-			<button
-				class="btn primary"
-				bind:this={submitBtn}
-				disabled={!canNext || phase !== 'idle'}
-				onclick={next}
-			>
+			<div class="d-row note-row">
+				<span class="d-icon"><Icon name="pencil" size={14} /></span>
+				<input class="note-input" type="text" placeholder="Tambahkan catatan…" bind:value={note} />
+			</div>
+		</div>
+
+		<div class="save-wrap" bind:this={submitBtn} data-enter>
+			<Button size="lg" class="w-full" disabled={!canSave || phase !== 'idle'} onclick={submit}>
 				{#if phase === 'idle'}
-					{step === 3 ? 'Simpan' : 'Lanjut'}
+					{saveLabel}
 				{:else if phase === 'loading'}
 					Menyimpan…
 				{:else}
@@ -344,208 +260,156 @@
 						Tersimpan
 					</span>
 				{/if}
-			</button>
-		{/if}
+			</Button>
+		</div>
 	</div>
 </BottomSheet>
 
 <style>
-	.dots {
-		display: flex;
-		gap: 6px;
-		justify-content: center;
-		margin-bottom: 14px;
-	}
-	.dot {
-		width: 6px;
-		height: 6px;
-		border-radius: 999px;
-		background: var(--border);
-		transition:
-			background 0.3s ease,
-			width 0.3s ease;
-	}
-	.dot.active {
-		background: var(--blue);
-		width: 18px;
-	}
-	.viewport {
-		overflow: hidden;
-	}
-	.track {
-		display: flex;
-		width: 400%;
-		will-change: transform;
-	}
-	.step {
-		width: 25%;
-		flex-shrink: 0;
-		padding: 0 4px 8px;
-		min-height: 320px;
+	.entry {
 		display: flex;
 		flex-direction: column;
 	}
-	.step.center-vert {
+	.type-row {
+		display: flex;
 		justify-content: center;
-		align-items: center;
-		gap: 22px;
-		padding: 30px 4px;
+		padding: 2px 0 8px;
 	}
-	.step-title {
-		font-size: 16px;
-		font-weight: 700;
-		margin-bottom: 14px;
+	.cats {
+		margin-top: 20px;
 	}
-	.jenis-hint {
-		font-size: 13px;
-		color: var(--text-2);
-		text-align: center;
-		max-width: 260px;
+	.cats-label {
+		display: block;
+		margin: 0 2px 10px;
 	}
-	.jenis-cards {
+	.chips {
 		display: flex;
-		gap: 14px;
-		width: 100%;
-		max-width: 340px;
-	}
-	.jenis-card {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 14px;
-		padding: 28px 16px;
-		border-radius: var(--r-lg);
-		border: 2px solid var(--border);
-		background: transparent;
-		color: var(--text-2);
-		transition: all 0.25s ease;
-		-webkit-tap-highlight-color: transparent;
-	}
-	.jenis-card:active {
-		transform: scale(0.97);
-	}
-	.jenis-card.expense.selected {
-		border-color: var(--red);
-		background: var(--red);
-		color: #fff;
-	}
-	.jenis-card.income.selected {
-		border-color: var(--green);
-		background: var(--green);
-		color: #fff;
-	}
-	.jenis-icon {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-	.grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 10px;
-	}
-	.review-card {
-		background: var(--surface-2);
-		border-radius: var(--r-lg);
-		padding: 18px 20px;
-		margin-bottom: 16px;
-		text-align: center;
-	}
-	.review-amt {
-		font-size: 30px;
-		font-weight: 800;
-		margin-bottom: 10px;
-		letter-spacing: -0.02em;
-	}
-	.review-meta {
-		display: flex;
+		flex-wrap: wrap;
 		gap: 8px;
-		justify-content: center;
-		align-items: center;
+		max-height: 150px;
+		overflow-y: auto;
 	}
-	.pill {
+	.empty-cats {
+		font-size: 13px;
+		color: var(--text-3);
+		padding: 4px 2px;
+	}
+	.details {
+		margin-top: 18px;
+		background: var(--muted);
+		border-radius: var(--r-lg);
+		padding: 2px 14px;
+	}
+	.d-row {
+		display: flex;
+		align-items: center;
+		gap: 10px;
+		padding: 10px 0;
+		border-bottom: 1px solid var(--border);
+	}
+	.d-row:last-child {
+		border-bottom: none;
+	}
+	.d-icon {
+		width: 26px;
+		height: 26px;
+		flex-shrink: 0;
+		border-radius: 999px;
+		background: var(--card);
+		color: var(--muted-foreground);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+	.d-label {
+		font-size: 13px;
+		font-weight: 600;
+		color: var(--muted-foreground);
+	}
+	.d-ctrl {
+		margin-left: auto;
+	}
+	.d-toggle {
+		margin-left: auto;
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		padding: 5px 11px;
+		padding: 7px 12px;
 		border-radius: 999px;
-		font-size: 12px;
+		background: var(--card);
+		font-size: 13px;
 		font-weight: 600;
-		background: color-mix(in srgb, var(--c) 14%, var(--surface));
+		color: var(--foreground);
 	}
-	.pill-type {
-		display: inline-flex;
-		padding: 5px 11px;
-		border-radius: 999px;
-		font-size: 12px;
-		font-weight: 600;
-		background: var(--surface);
-		color: var(--text-2);
+	.d-value {
+		line-height: 1;
 	}
-	.field-row {
+	.chev {
+		display: flex;
+		color: var(--muted-foreground);
+		transition: transform 0.2s ease;
+	}
+	.chev.open {
+		transform: rotate(180deg);
+	}
+	.when-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
 		gap: 10px;
-		margin-bottom: 10px;
+		padding: 12px 0 14px 36px;
+		border-bottom: 1px solid var(--border);
 	}
-	.field {
+	.wfield {
 		display: flex;
 		flex-direction: column;
-		gap: 6px;
-	}
-	.field.full {
-		margin-bottom: 6px;
-	}
-	.flabel {
-		font-size: 12px;
-		color: var(--text-2);
-		font-weight: 600;
+		gap: 5px;
 	}
 	.finput {
-		padding: 12px 14px;
-		border-radius: 14px;
+		width: 100%;
+		padding: 10px 12px;
+		border-radius: 12px;
 		border: 1px solid var(--border);
-		background: var(--surface);
-		color: var(--text);
-		font-size: 15px;
+		background: var(--card);
+		color: var(--foreground);
+		font-size: 14px;
 		font-weight: 500;
 		outline: none;
+		transition:
+			border-color 0.15s ease,
+			box-shadow 0.15s ease;
 	}
 	.finput:focus {
-		border-color: var(--blue);
+		border-color: var(--violet);
+		box-shadow: 0 0 0 3px color-mix(in oklab, var(--violet) 14%, transparent);
 	}
-	.actions {
-		display: flex;
+	.note-row {
 		gap: 10px;
-		margin-top: 18px;
 	}
-	.btn {
+	.note-input {
 		flex: 1;
-		height: 50px;
-		border-radius: 16px;
-		font-weight: 700;
-		font-size: 15px;
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		gap: 6px;
+		min-width: 0;
+		background: transparent;
+		border: none;
+		outline: none;
+		font-size: 14px;
+		font-weight: 500;
+		color: var(--foreground);
+		padding: 4px 0;
 	}
-	.btn.ghost {
-		background: var(--surface-2);
-		color: var(--text);
+	.note-input::placeholder {
+		color: var(--text-3);
 	}
-	.btn.primary {
-		background: #0b0f17;
-		color: #fff;
-	}
-	.btn.primary:disabled {
-		opacity: 0.4;
+	.save-wrap {
+		position: sticky;
+		bottom: 0;
+		margin-top: 16px;
+		padding: 12px 0 4px;
+		background: linear-gradient(to top, var(--card) 72%, transparent);
 	}
 	.ok {
 		display: inline-flex;
 		align-items: center;
 		gap: 6px;
-		color: var(--green);
+		color: var(--success);
 	}
 </style>

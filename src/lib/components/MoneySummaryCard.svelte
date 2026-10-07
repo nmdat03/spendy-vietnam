@@ -17,20 +17,28 @@
 
 	const bars = [10, 22, 14, 28, 18, 30, 12, 24];
 	const maxBar = Math.max(...bars);
-	const color = $derived(kind === 'in' ? 'var(--green)' : 'var(--red)');
+	// Income reads green; spending reads ink — red is reserved for destructive UI.
+	const color = $derived(kind === 'in' ? 'var(--success)' : 'var(--foreground)');
 	const arrow = $derived(kind === 'in' ? 'arrow-up-right' : 'arrow-down-right');
 </script>
 
-<a class="card summary" href={href ?? '#'} aria-label={title}>
-	<div class="top">
-		<span class="ttl">{title}</span>
-		<span class="arrow" style="--c: {color}"><Icon name={arrow} size={16} /></span>
+<a class="card flex min-w-0 flex-1 flex-col p-5" href={href ?? '#'} aria-label={title}>
+	<div class="flex items-center justify-between gap-2">
+		<span class="micro-label">{title}</span>
+		<span class="inline-flex" style="color: {color}">
+			<Icon name={arrow} size={15} strokeWidth={2.25} />
+		</span>
 	</div>
-	<div class="val" style="color: {color}">{formatCurrency(value, currency)}</div>
-	<div class="spark">
+	<div
+		class="t-num mt-2.5 text-[18px] leading-none font-bold tracking-[-0.02em]"
+		style="color: {color}"
+	>
+		{formatCurrency(value, currency)}
+	</div>
+	<div class="mt-3.5 flex h-6 items-end gap-[3px]">
 		{#each bars as b, i (i)}
 			<span
-				class="spk-bar"
+				class="spk-bar flex-1 rounded-full"
 				class:hi={highlight.includes(i)}
 				style="height: {(b / maxBar) * 100}%; --c: {color}"
 			></span>
@@ -39,46 +47,11 @@
 </a>
 
 <style>
-	.summary {
-		display: flex;
-		flex-direction: column;
-		gap: 6px;
-		padding: 14px 14px 12px;
-		flex: 1;
-		min-width: 0;
-	}
-	.top {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-	}
-	.ttl {
-		font-size: 12px;
-		color: var(--text-2);
-		font-weight: 600;
-	}
-	.arrow {
-		display: inline-flex;
-		color: var(--c);
-	}
-	.val {
-		font-size: 19px;
-		font-weight: 800;
-		letter-spacing: -0.01em;
-		font-variant-numeric: tabular-nums;
-	}
-	.spark {
-		display: flex;
-		align-items: flex-end;
-		gap: 3px;
-		height: 28px;
-		margin-top: 4px;
-	}
 	.spk-bar {
-		flex: 1;
+		min-height: 4px;
 		background: var(--border);
-		border-radius: 3px;
 		opacity: 0.7;
+		transition: opacity 0.2s ease;
 	}
 	.spk-bar.hi {
 		background: var(--c);

@@ -1,7 +1,7 @@
 <script lang="ts">
-	// BarChart: vertical bar chart for monthly breakdowns. The "active" bar gets
-	// a colored gradient; inactive bars use a hatch/transparent pattern.
-	// Bars rise in with a GSAP stagger.
+	// BarChart: vertical bar chart for monthly breakdowns. The active month is a
+	// solid accent bar (violet by default via `color`); other months are muted.
+	// Bars rise in with a GSAP stagger; hovering a column reveals its value.
 	import { onDestroy } from 'svelte';
 	import { gsap, EASES } from '$lib/animations/gsap';
 	import { motionReduced } from '$lib/state/settings.svelte';
@@ -20,6 +20,16 @@
 
 	const max = $derived(Math.max(1, ...bars.map((b) => b.value)));
 	let barEls: HTMLElement[] = $state([]);
+	let hoverIdx = $state<number | null>(null);
+
+	const compact = new Intl.NumberFormat('en-US', {
+		notation: 'compact',
+		maximumFractionDigits: 1
+	});
+
+	function pct(b: Bar): number {
+		return Math.max(2, (b.value / max) * 100);
+	}
 
 	$effect(() => {
 		bars;
@@ -42,16 +52,27 @@
 
 <div class="bars" style="height: {height}px">
 	{#each bars as b, i (i)}
-		<div class="col">
+		<div
+			class="col"
+			role="presentation"
+			onmouseenter={() => (hoverIdx = i)}
+			onmouseleave={() => (hoverIdx = null)}
+		>
 			<div class="bar-track">
+				{#if b.active || hoverIdx === i}
+					<span class="val t-num" style="bottom: calc({pct(b)}% + 8px)">
+						{compact.format(b.value)}
+					</span>
+				{/if}
 				<div
-					class="bar {b.active ? 'active' : 'inactive'}"
+					class="bar"
+					class:active={b.active}
 					bind:this={barEls[i]}
-					style="height: {Math.max(2, (b.value / max) * 100)}%; --bar-color: {color}"
+					style="height: {pct(b)}%; --bar-color: {color}"
 					aria-label="{b.label}: {b.value}"
 				></div>
 			</div>
-			<span class="lbl" class:active={b.active}>{b.label}</span>
+			<span class="lbl micro-label" class:active={b.active}>{b.label}</span>
 		</div>
 	{/each}
 </div>
@@ -60,46 +81,67 @@
 	.bars {
 		display: flex;
 		align-items: flex-end;
-		gap: 8px;
 		width: 100%;
 	}
 	.col {
 		flex: 1;
+		min-width: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		gap: 8px;
 		height: 100%;
+		padding: 0 5px;
 	}
 	.bar-track {
+		position: relative;
 		flex: 1;
 		width: 100%;
 		display: flex;
 		align-items: flex-end;
 		justify-content: center;
+		border-bottom: 1px solid var(--border);
 	}
 	.bar {
-		width: 70%;
-		border-radius: 8px 8px 4px 4px;
-		background: var(--bar-color);
+		width: 62%;
+		max-width: 42px;
+		border-radius: 7px 7px 2px 2px;
+		background: color-mix(in oklab, var(--muted) 62%, transparent);
 		will-change: transform;
+		transition:
+			height 0.5s cubic-bezier(0.22, 1, 0.36, 1),
+			background 0.25s ease,
+			box-shadow 0.25s ease;
 	}
-	.bar.inactive {
-		background: repeating-linear-gradient(
-			45deg,
-			var(--border),
-			var(--border) 3px,
-			transparent 3px,
-			transparent 7px
+	.bar.active {
+		background: linear-gradient(
+			180deg,
+			color-mix(in oklab, var(--bar-color) 78%, #fff) 0%,
+			var(--bar-color) 100%
 		);
-		opacity: 0.7;
+		box-shadow: 0 6px 16px color-mix(in oklab, var(--bar-color) 30%, transparent);
+	}
+	.col:hover .bar:not(.active) {
+		background: color-mix(in oklab, var(--muted-foreground) 26%, transparent);
+	}
+	.val {
+		position: absolute;
+		left: 50%;
+		transform: translateX(-50%);
+		z-index: 1;
+		padding: 3px 8px;
+		border-radius: 999px;
+		background: var(--foreground);
+		color: var(--background);
+		font-size: 11px;
+		font-weight: 700;
+		white-space: nowrap;
+		pointer-events: none;
 	}
 	.lbl {
-		font-size: 11px;
-		color: var(--text-3);
-		font-weight: 600;
+		color: var(--muted-foreground);
 	}
 	.lbl.active {
-		color: var(--text);
+		color: var(--foreground);
 	}
 </style>

@@ -60,8 +60,8 @@
 		display: flex;
 		align-items: center;
 		gap: 12px;
-		padding: 12px 4px;
-		border-bottom: 1px solid var(--border);
+		padding: 12px 2px;
+		border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
 		cursor: pointer;
 		-webkit-tap-highlight-color: transparent;
 	}
@@ -69,59 +69,66 @@
 		border-bottom: none;
 	}
 	.avatar {
-		width: 40px;
-		height: 40px;
-		border-radius: 14px;
+		width: 42px;
+		height: 42px;
+		border-radius: 13px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: color-mix(in srgb, var(--c) 14%, var(--surface));
+		background: color-mix(in srgb, var(--c) 13%, var(--card));
 		flex-shrink: 0;
 	}
 	.meta {
 		flex: 1;
 		display: flex;
 		flex-direction: column;
-		gap: 2px;
+		gap: 3px;
 		min-width: 0;
 	}
 	.name {
-		font-size: 14.5px;
+		font-size: 15px;
 		font-weight: 600;
-		color: var(--text);
+		letter-spacing: -0.01em;
+		color: var(--foreground);
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
 	}
 	.sub {
-		font-size: 12px;
+		font-size: 12.5px;
 		color: var(--text-3);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 	.acc-tag {
-		font-weight: 700;
+		font-weight: 650;
 		font-size: 10px;
-		padding: 1px 6px;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		padding: 1.5px 7px;
 		border-radius: 999px;
 		margin-left: 2px;
 	}
 	.acc-tag.cash {
-		background: color-mix(in srgb, var(--green) 14%, var(--surface));
+		background: color-mix(in srgb, var(--green) 13%, var(--card));
 		color: var(--green);
 	}
 	.acc-tag.debit {
-		background: color-mix(in srgb, var(--blue) 14%, var(--surface));
+		background: color-mix(in srgb, var(--blue) 13%, var(--card));
 		color: var(--blue);
 	}
 	.amount {
-		font-size: 14.5px;
-		font-weight: 700;
+		font-size: 15px;
+		font-weight: 650;
+		letter-spacing: -0.02em;
 		font-variant-numeric: tabular-nums;
 		white-space: nowrap;
 	}
 	.amount.income {
-		color: var(--green);
+		color: var(--success);
 	}
 	.amount.expense {
-		color: var(--red);
+		color: var(--foreground);
 	}
 </style>

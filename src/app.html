@@ -9,7 +9,8 @@
 		<meta name="text-scale" content="scale" />
 
 		<!-- PWA manifest is injected by vite-plugin-pwa -->
-		<meta name="theme-color" content="#0b0f17" />
+		<meta name="theme-color" media="(prefers-color-scheme: light)" content="#fafaf8" />
+		<meta name="theme-color" media="(prefers-color-scheme: dark)" content="#0c0c10" />
 		<link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
 		<link rel="apple-touch-icon" href="/icons/icon-192.png" />
 		<link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
@@ -28,14 +29,16 @@
 
 		<style>
 			:root {
-				--splash-bg: #f6f7fb;
-				--splash-text: #0b0f17;
-				--splash-sub: #6b7280;
+				--splash-bg: #fafaf8;
+				--splash-text: #1a1a20;
+				--splash-sub: #8b8b96;
+				--splash-accent: #6d3ae8;
 			}
 			:root[data-theme='dark'] {
-				--splash-bg: #0a0c12;
-				--splash-text: #f5f7fb;
-				--splash-sub: #a5adc0;
+				--splash-bg: #0c0c10;
+				--splash-text: #f4f4f5;
+				--splash-sub: #9d9da8;
+				--splash-accent: #9a72f0;
 			}
 			#splash {
 				position: fixed;
@@ -61,8 +64,8 @@
 			#splash img {
 				width: 84px;
 				height: 84px;
-				border-radius: 22px;
-				box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+				border-radius: 24px;
+				box-shadow: 0 12px 32px rgba(109, 58, 232, 0.16);
 			}
 			#splash .title {
 				font-size: 26px;
@@ -79,9 +82,11 @@
 					sans-serif;
 			}
 			#splash .sub {
-				font-size: 14px;
+				font-size: 13px;
 				color: var(--splash-sub);
-				font-weight: 500;
+				font-weight: 550;
+				letter-spacing: 0.08em;
+				text-transform: uppercase;
 				font-family:
 					Inter,
 					-apple-system,
@@ -95,8 +100,8 @@
 			#splash .spinner {
 				width: 22px;
 				height: 22px;
-				border: 2.5px solid var(--splash-sub);
-				border-top-color: transparent;
+				border: 2.5px solid color-mix(in srgb, var(--splash-accent) 25%, transparent);
+				border-top-color: var(--splash-accent);
 				border-radius: 50%;
 				animation: splash-spin 0.8s linear infinite;
 				margin-top: 8px;
@@ -109,8 +114,7 @@
 			@media (prefers-reduced-motion: reduce) {
 				#splash .spinner {
 					animation: none;
-					border-top-color: var(--splash-sub);
-					opacity: 0.5;
+					opacity: 0.4;
 				}
 			}
 		</style>
@@ -136,7 +140,7 @@
 		<div id="splash" aria-busy="true" aria-label="Memuat Spendy">
 			<img src="/icons/icon.svg" alt="" />
 			<div class="title">Spendy</div>
-			<div class="sub">Personal spending tracker</div>
+			<div class="sub">Track every rupiah</div>
 			<div class="spinner"></div>
 		</div>
 		<div style="display: contents">%sveltekit.body%</div>

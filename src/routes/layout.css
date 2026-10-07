@@ -1,45 +1,165 @@
 @import 'tailwindcss';
 
+/* Dark mode is driven by the data-theme attribute on <html> (settings rune). */
+@custom-variant dark (&:is([data-theme='dark'] *));
+
+/* ---------------------------------------------------------------------------
+   Design tokens — "European fintech" palette (warm paper, ink, violet accent)
+   --------------------------------------------------------------------------- */
 :root {
-	--bg: #f6f7fb;
-	--surface: #ffffff;
-	--surface-2: #f3f4f8;
-	--text: #0b0f17;
-	--text-2: #6b7280;
-	--text-3: #9aa3b2;
-	--border: #eceef3;
-	--accent: #0b0f17;
-	--blue: #2563eb;
-	--green: #16a34a;
-	--red: #e11d48;
-	--shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04), 0 2px 6px rgba(15, 23, 42, 0.06);
-	--shadow-md: 0 6px 16px rgba(15, 23, 42, 0.08), 0 2px 6px rgba(15, 23, 42, 0.05);
-	--shadow-lg: 0 18px 40px rgba(15, 23, 42, 0.12);
-	--r-sm: 12px;
-	--r-md: 18px;
-	--r-lg: 24px;
-	--r-xl: 30px;
+	--background: oklch(0.984 0.003 84);
+	--foreground: oklch(0.185 0.012 265);
+	--card: oklch(1 0 0);
+	--card-foreground: oklch(0.185 0.012 265);
+	--popover: oklch(1 0 0);
+	--popover-foreground: oklch(0.185 0.012 265);
+	--primary: oklch(0.21 0.014 265);
+	--primary-foreground: oklch(0.985 0.002 84);
+	--secondary: oklch(0.955 0.004 90);
+	--secondary-foreground: oklch(0.185 0.012 265);
+	--muted: oklch(0.955 0.004 90);
+	--muted-foreground: oklch(0.525 0.014 265);
+	--accent: oklch(0.955 0.004 90);
+	--accent-foreground: oklch(0.185 0.012 265);
+	--destructive: oklch(0.55 0.2 22);
+	--destructive-foreground: oklch(0.985 0.002 84);
+	--success: oklch(0.58 0.13 156);
+	--warning: oklch(0.7 0.14 70);
+	--border: oklch(0.912 0.005 90);
+	--input: oklch(0.912 0.005 90);
+	--ring: oklch(0.55 0.16 285);
+	--violet: oklch(0.55 0.19 285);
+	--blue: oklch(0.55 0.18 260);
+	--green: oklch(0.58 0.13 156);
+	--red: oklch(0.58 0.2 20);
+	--radius: 1rem;
+
+	/* Legacy aliases — existing scoped styles keep working while pages migrate. */
+	--bg: var(--background);
+	--surface: var(--card);
+	--surface-2: var(--muted);
+	--text: var(--foreground);
+	--text-2: var(--muted-foreground);
+	--text-3: oklch(0.63 0.012 265);
+	--shadow-sm: 0 1px 2px oklch(0.185 0.012 265 / 0.05), 0 2px 8px oklch(0.185 0.012 265 / 0.04);
+	--shadow-md: 0 6px 20px oklch(0.185 0.012 265 / 0.07), 0 2px 6px oklch(0.185 0.012 265 / 0.05);
+	--shadow-lg: 0 20px 48px oklch(0.185 0.012 265 / 0.14);
+	--r-sm: 10px;
+	--r-md: 14px;
+	--r-lg: 20px;
+	--r-xl: 28px;
 	--safe-bottom: env(safe-area-inset-bottom, 0px);
 	--safe-top: env(safe-area-inset-top, 0px);
 	color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-	--bg: #0a0c12;
-	--surface: #141822;
-	--surface-2: #1b2030;
-	--text: #f5f7fb;
-	--text-2: #a5adc0;
-	--text-3: #6b7280;
-	--border: #232a38;
-	--accent: #f5f7fb;
-	--blue: #60a5fa;
-	--green: #34d399;
-	--red: #fb7185;
-	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(0, 0, 0, 0.3);
-	--shadow-md: 0 6px 16px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.3);
-	--shadow-lg: 0 18px 40px rgba(0, 0, 0, 0.55);
+	--background: oklch(0.155 0.007 265);
+	--foreground: oklch(0.965 0.003 84);
+	--card: oklch(0.196 0.008 265);
+	--card-foreground: oklch(0.965 0.003 84);
+	--popover: oklch(0.21 0.008 265);
+	--popover-foreground: oklch(0.965 0.003 84);
+	--primary: oklch(0.965 0.003 84);
+	--primary-foreground: oklch(0.185 0.012 265);
+	--secondary: oklch(0.248 0.008 265);
+	--secondary-foreground: oklch(0.965 0.003 84);
+	--muted: oklch(0.248 0.008 265);
+	--muted-foreground: oklch(0.7 0.012 265);
+	--accent: oklch(0.248 0.008 265);
+	--accent-foreground: oklch(0.965 0.003 84);
+	--destructive: oklch(0.66 0.19 22);
+	--destructive-foreground: oklch(0.145 0.007 265);
+	--success: oklch(0.7 0.14 158);
+	--warning: oklch(0.78 0.13 75);
+	--border: oklch(0.275 0.008 265);
+	--input: oklch(0.275 0.008 265);
+	--ring: oklch(0.65 0.15 285);
+	--violet: oklch(0.66 0.18 285);
+	--blue: oklch(0.7 0.15 255);
+	--green: oklch(0.7 0.14 158);
+	--red: oklch(0.68 0.19 20);
+	--text-3: oklch(0.55 0.01 265);
+	--shadow-sm: 0 1px 2px oklch(0 0 0 / 0.4), 0 2px 8px oklch(0 0 0 / 0.3);
+	--shadow-md: 0 6px 20px oklch(0 0 0 / 0.45), 0 2px 6px oklch(0 0 0 / 0.3);
+	--shadow-lg: 0 20px 48px oklch(0 0 0 / 0.55);
 	color-scheme: dark;
+}
+
+/* Expose tokens as Tailwind utilities (bg-card, text-muted-foreground, ...). */
+@theme inline {
+	--color-background: var(--background);
+	--color-foreground: var(--foreground);
+	--color-card: var(--card);
+	--color-card-foreground: var(--card-foreground);
+	--color-popover: var(--popover);
+	--color-popover-foreground: var(--popover-foreground);
+	--color-primary: var(--primary);
+	--color-primary-foreground: var(--primary-foreground);
+	--color-secondary: var(--secondary);
+	--color-secondary-foreground: var(--secondary-foreground);
+	--color-muted: var(--muted);
+	--color-muted-foreground: var(--muted-foreground);
+	--color-accent: var(--accent);
+	--color-accent-foreground: var(--accent-foreground);
+	--color-destructive: var(--destructive);
+	--color-destructive-foreground: var(--destructive-foreground);
+	--color-success: var(--success);
+	--color-warning: var(--warning);
+	--color-border: var(--border);
+	--color-input: var(--input);
+	--color-ring: var(--ring);
+	--color-violet: var(--violet);
+	--color-blue: var(--blue);
+	--color-green: var(--green);
+	--color-red: var(--red);
+	--radius-sm: calc(var(--radius) - 8px);
+	--radius-md: calc(var(--radius) - 4px);
+	--radius-lg: var(--radius);
+	--radius-xl: calc(var(--radius) + 6px);
+}
+
+/* Entrance animations used by dialogs / sheets / toasts. */
+@theme {
+	--animate-fade-in: fade-in 0.22s ease;
+	--animate-fade-out: fade-out 0.2s ease;
+	--animate-sheet-in: sheet-in 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+	--animate-pop-in: pop-in 0.28s cubic-bezier(0.2, 0.9, 0.25, 1.08);
+
+	@keyframes fade-in {
+		from {
+			opacity: 0;
+		}
+		to {
+			opacity: 1;
+		}
+	}
+	@keyframes fade-out {
+		from {
+			opacity: 1;
+		}
+		to {
+			opacity: 0;
+		}
+	}
+	@keyframes sheet-in {
+		from {
+			transform: translateY(100%);
+		}
+		to {
+			transform: translateY(0);
+		}
+	}
+	@keyframes pop-in {
+		from {
+			opacity: 0;
+			transform: translateY(10px) scale(0.97);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0) scale(1);
+		}
+	}
 }
 
 * {
@@ -52,8 +172,8 @@ body {
 	padding: 0;
 	min-height: 100vh;
 	min-height: 100dvh;
-	background: var(--bg);
-	color: var(--text);
+	background: var(--background);
+	color: var(--foreground);
 	font-family:
 		'Inter',
 		-apple-system,
@@ -66,8 +186,7 @@ body {
 	-webkit-font-smoothing: antialiased;
 	-webkit-tap-highlight-color: transparent;
 	overscroll-behavior-y: none;
-	/* Disable both double-tap-zoom and pinch-zoom at the CSS level.
-	   pan-x pan-y allows scrolling but blocks pinch/double-tap zoom. */
+	/* Disable both double-tap-zoom and pinch-zoom at the CSS level. */
 	touch-action: pan-x pan-y;
 }
 
@@ -96,70 +215,99 @@ a {
 	text-decoration: none;
 }
 
-/* Aurora background: soft pastel blobs that drift slowly (animated via GSAP
-   in the root layout). Sits behind everything; cards have solid surfaces so
-   content stays readable. */
-.mesh-bg {
-	position: fixed;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100vh;
-	height: 100dvh;
-	z-index: 0;
-	overflow: hidden;
-	background: var(--bg);
-}
-.aurora-blob {
-	position: absolute;
-	border-radius: 50%;
-	filter: blur(42px);
-	opacity: 0.95;
-	will-change: transform;
-	pointer-events: none;
-}
-.aurora-blob.a {
-	width: 72vw;
-	height: 72vw;
-	top: -6vw;
-	right: -8vw;
-	background: radial-gradient(circle, rgba(96, 165, 250, 0.9), transparent 74%);
-}
-.aurora-blob.b {
-	width: 78vw;
-	height: 78vw;
-	bottom: -8vw;
-	left: -14vw;
-	background: radial-gradient(circle, rgba(244, 114, 182, 0.85), transparent 74%);
-}
-.aurora-blob.c {
-	width: 62vw;
-	height: 62vw;
-	top: 30%;
-	left: 18%;
-	background: radial-gradient(circle, rgba(167, 139, 250, 0.78), transparent 74%);
-}
-.aurora-blob.d {
-	width: 58vw;
-	height: 58vw;
-	top: 4%;
-	left: -2vw;
-	background: radial-gradient(circle, rgba(103, 232, 249, 0.66), transparent 74%);
-}
-:root[data-theme='dark'] .aurora-blob {
-	opacity: 0.45;
-}
-@media (prefers-reduced-motion: reduce) {
-	.aurora-blob {
-		will-change: auto;
-	}
-}
-:root[data-reduce-motion] .aurora-blob {
-	will-change: auto;
+::selection {
+	background: color-mix(in oklab, var(--violet) 22%, transparent);
 }
 
-/* Respect reduce-motion globally: disable CSS transitions/animations when the
-   user toggles "Reduce animation" in settings or the system asks for it. */
+/* ---------------------------------------------------------------------------
+   Utilities
+   --------------------------------------------------------------------------- */
+
+/* Micro label: tiny uppercase section label, very "Swiss" typography. */
+.micro-label {
+	font-size: 11px;
+	font-weight: 650;
+	letter-spacing: 0.09em;
+	text-transform: uppercase;
+	color: var(--text-3);
+}
+
+/* Big money numerals. */
+.t-num {
+	font-variant-numeric: tabular-nums;
+	letter-spacing: -0.03em;
+}
+
+.card {
+	background: var(--card);
+	border: 1px solid var(--border);
+	border-radius: var(--r-lg);
+	box-shadow: var(--shadow-sm);
+}
+
+.touch {
+	min-width: 44px;
+	min-height: 44px;
+	-webkit-user-select: none;
+	user-select: none;
+}
+
+/* Instant tap feedback for interactive elements. Elements animated by GSAP keep
+   an inline transform that overrides this, so they aren't affected. */
+button,
+[role='button'],
+a.card {
+	transition:
+		transform 0.12s ease,
+		background 0.15s ease,
+		color 0.2s ease,
+		opacity 0.15s ease;
+}
+button:active,
+[role='button']:active,
+a.card:active {
+	transform: scale(0.97);
+}
+
+/* Slim scrollbar for inner scroll regions. */
+.scroll-y {
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+	display: none;
+}
+.no-scrollbar {
+	-ms-overflow-style: none;
+	scrollbar-width: none;
+}
+
+/* Ambient background: two static soft glows, extremely low-key. */
+.bg-glow {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(
+			560px 460px at 88% -6%,
+			color-mix(in oklab, var(--violet) 9%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			620px 520px at -12% 14%,
+			color-mix(in oklab, var(--blue) 7%, transparent),
+			transparent 70%
+		);
+}
+:root[data-theme='dark'] .bg-glow {
+	opacity: 0.55;
+}
+
+/* ---------------------------------------------------------------------------
+   Reduced motion — user toggle (data-reduce-motion) or system preference.
+   --------------------------------------------------------------------------- */
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
@@ -177,49 +325,4 @@ a {
 	animation-iteration-count: 1 !important;
 	transition-duration: 0.01ms !important;
 	scroll-behavior: auto !important;
-}
-
-.card {
-	background: var(--surface);
-	border-radius: var(--r-lg);
-	box-shadow: var(--shadow-sm);
-}
-
-.touch {
-	min-width: 44px;
-	min-height: 44px;
-	-webkit-user-select: none;
-	user-select: none;
-}
-
-/* Instant tap feedback for interactive elements. Elements animated by GSAP keep
-   an inline transform that overrides this, so they aren't affected. */
-button,
-[role='button'],
-a.card,
-.summary {
-	transition:
-		transform 0.12s ease,
-		background 0.15s ease,
-		color 0.2s ease;
-}
-button:active,
-[role='button']:active,
-a.card:active,
-.summary:active {
-	transform: scale(0.97);
-}
-
-/* Slim scrollbar for inner scroll regions. */
-.scroll-y {
-	overflow-y: auto;
-	scrollbar-width: thin;
-}
-
-.no-scrollbar::-webkit-scrollbar {
-	display: none;
-}
-.no-scrollbar {
-	-ms-overflow-style: none;
-	scrollbar-width: none;
 }

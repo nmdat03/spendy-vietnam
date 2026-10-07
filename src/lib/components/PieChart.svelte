@@ -73,14 +73,7 @@
 <div class="pie-wrap">
 	<svg viewBox="-8 -8 116 116" width={size} height={size} class="pie-svg" role="img">
 		<g transform="rotate(-90 50 50)">
-			<circle
-				cx="50"
-				cy="50"
-				r={R}
-				fill="none"
-				stroke="var(--surface-2)"
-				stroke-width={thickness}
-			/>
+			<circle cx="50" cy="50" r={R} fill="none" stroke="var(--muted)" stroke-width={thickness} />
 			{#each segs as seg, i (seg.id)}
 				<circle
 					bind:this={ringEls[i]}
@@ -99,20 +92,20 @@
 					aria-label="{seg.label}: {seg.value}"
 					onclick={() => selectSlice(seg.id)}
 					onkeydown={(e) => e.key === 'Enter' && selectSlice(seg.id)}
-					style="cursor: pointer; transition: stroke-width 0.2s ease;"
+					style="--c: {seg.color}; cursor: pointer; transition: stroke-width 0.2s ease;"
 				/>
 			{/each}
 		</g>
 		{#if centerValue || centerLabel}
-			<text x="50" y="48" text-anchor="middle" class="ct-v">{centerValue ?? ''}</text>
-			<text x="50" y="62" text-anchor="middle" class="ct-l">{centerLabel ?? ''}</text>
+			<text x="50" y="48.5" text-anchor="middle" class="ct-v t-num">{centerValue ?? ''}</text>
+			<text x="50" y="61.5" text-anchor="middle" class="ct-l">{centerLabel ?? ''}</text>
 		{/if}
 	</svg>
 
 	{#if selectedId !== null}
 		{@const sel = segs.find((s) => s.id === selectedId)}
 		{#if sel}
-			<div class="sel-info" style="--c: {sel.color}">
+			<div class="sel-info animate-pop-in" style="--c: {sel.color}">
 				<span class="sel-label">{sel.label}</span>
 				<span class="sel-val">{Math.round(sel.frac * 100)}%</span>
 			</div>
@@ -137,18 +130,23 @@
 		outline: none;
 	}
 	.pie-svg .seg.sel {
-		filter: drop-shadow(0 0 6px var(--c, rgba(0, 0, 0, 0.2)));
+		filter: drop-shadow(0 0 6px color-mix(in srgb, var(--c, transparent) 55%, transparent));
+	}
+	.pie-svg text {
+		pointer-events: none;
 	}
 	.ct-v {
-		font-size: 11px;
+		font-size: 12.5px;
 		font-weight: 800;
-		fill: var(--text);
+		letter-spacing: -0.03em;
+		fill: var(--foreground);
 	}
 	.ct-l {
-		font-size: 6px;
+		font-size: 5.5px;
+		font-weight: 650;
 		fill: var(--text-3);
 		text-transform: uppercase;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.09em;
 	}
 	.sel-info {
 		display: flex;
@@ -159,11 +157,14 @@
 	.sel-label {
 		font-size: 13px;
 		font-weight: 600;
-		color: var(--text);
+		letter-spacing: -0.01em;
+		color: var(--foreground);
 	}
 	.sel-val {
-		font-size: 18px;
+		font-size: 20px;
 		font-weight: 800;
+		letter-spacing: -0.03em;
+		font-variant-numeric: tabular-nums;
 		color: var(--c);
 	}
 </style>

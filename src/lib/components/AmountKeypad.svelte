@@ -1,6 +1,8 @@
 <script lang="ts">
-	// AmountKeypad: large calculator-style keypad for Step 1 of the Add flow.
-	// Digits pop in on tap. Live-formats the amount per the active currency.
+	// AmountKeypad: Revolut-style numeric pad — big tabular amount display on
+	// top, flat roomy keys below with a clear press feedback (bg flash + GSAP
+	// pop). API is FROZEN (value / currency / allowDecimal / onchange): this
+	// component is also used by onboarding and the money pages.
 	import { gsap, EASES } from '$lib/animations/gsap';
 	import { motionReduced } from '$lib/state/settings.svelte';
 	import { currencySymbol } from '$lib/format/currency';
@@ -12,8 +14,6 @@
 		onchange: (v: string) => void;
 	}
 	let { value, currency, allowDecimal, onchange }: Props = $props();
-
-	let lastPressed = $state<string>('');
 
 	// Display value formatted with thousand separators.
 	const display = $derived(formatDisplay(value));
@@ -39,7 +39,6 @@
 
 	function press(d: string, e: MouseEvent) {
 		pop(e.currentTarget);
-		lastPressed = d;
 		// Reject leading zeros / multiple decimal points.
 		if (d === '.') {
 			if (!allowDecimal || value.includes('.')) return;
@@ -64,25 +63,25 @@
 </script>
 
 <div class="keypad">
-	<div class="amount-display">
-		<span class="sym">{currencySymbol(currency)}</span>
-		<span class="amt">{display || '0'}</span>
+	<div class="display" aria-live="polite">
+		<span class="sym t-num">{currencySymbol(currency)}</span>
+		<span class="amt t-num" class:placeholder={!display}>{display || '0'}</span>
 	</div>
 
 	<div class="grid">
 		{#each keys as k (k)}
-			<button class="key" onclick={(e) => press(k, e)} aria-label={k}>{k}</button>
+			<button class="key touch" onclick={(e) => press(k, e)} aria-label={k}>{k}</button>
 		{/each}
 		{#if allowDecimal}
-			<button class="key" onclick={(e) => press('.', e)} aria-label="decimal">.</button>
+			<button class="key" onclick={(e) => press('.', e)} aria-label="desimal">.</button>
 		{:else}
-			<button class="key aux" onclick={(e) => clearAll(e)} aria-label="Clear">C</button>
+			<button class="key aux touch" onclick={(e) => clearAll(e)} aria-label="Bersihkan">C</button>
 		{/if}
-		<button class="key" onclick={(e) => press('0', e)} aria-label="0">0</button>
-		<button class="key aux" onclick={(e) => backspace(e)} aria-label="Hapus">
+		<button class="key touch" onclick={(e) => press('0', e)} aria-label="0">0</button>
+		<button class="key aux touch" onclick={(e) => backspace(e)} aria-label="Hapus">
 			<svg
-				width="22"
-				height="22"
+				width="24"
+				height="24"
 				viewBox="0 0 24 24"
 				fill="none"
 				stroke="currentColor"
@@ -100,55 +99,70 @@
 
 <style>
 	.keypad {
+		width: 100%;
 		display: flex;
 		flex-direction: column;
-		gap: 18px;
-		padding-top: 6px;
+		gap: 10px;
 	}
-	.amount-display {
+	.display {
 		display: flex;
 		align-items: baseline;
 		justify-content: center;
-		gap: 6px;
-		padding: 18px 0;
-		min-height: 96px;
+		gap: 8px;
+		min-height: 78px;
+		padding: 12px 0 4px;
 	}
 	.sym {
-		font-size: 22px;
-		color: var(--text-2);
-		font-weight: 600;
+		font-size: 20px;
+		font-weight: 650;
+		color: var(--muted-foreground);
+		letter-spacing: -0.01em;
 	}
 	.amt {
-		font-size: 44px;
-		font-weight: 800;
-		letter-spacing: -0.02em;
-		font-variant-numeric: tabular-nums;
+		font-size: clamp(42px, 12.5vw, 54px);
+		font-weight: 700;
+		color: var(--foreground);
+	}
+	.amt.placeholder {
+		color: var(--text-3);
+		opacity: 0.45;
 	}
 	.grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 10px;
+		gap: 6px 8px;
 	}
 	.key {
-		height: 60px;
+		height: 62px;
 		border-radius: 18px;
-		background: var(--surface-2);
-		font-size: 22px;
+		font-size: 25px;
 		font-weight: 600;
-		color: var(--text);
+		letter-spacing: -0.01em;
+		color: var(--foreground);
+		background: transparent;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		transition: background 0.15s ease;
+		-webkit-tap-highlight-color: transparent;
+		transition: background 0.12s ease;
+	}
+	.key:hover {
+		background: color-mix(in srgb, var(--muted) 65%, transparent);
 	}
 	.key:active {
-		background: var(--border);
+		background: var(--muted);
+	}
+	.key:focus-visible {
+		outline: 2px solid var(--ring);
+		outline-offset: -2px;
 	}
 	.key.aux {
-		background: transparent;
-		color: var(--text-2);
+		color: var(--violet);
+	}
+	.key.aux:hover {
+		background: color-mix(in srgb, var(--violet) 9%, transparent);
 	}
 	.key.aux:active {
-		background: var(--surface-2);
+		background: color-mix(in srgb, var(--violet) 15%, transparent);
 	}
 </style>

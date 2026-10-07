@@ -7,6 +7,8 @@
 	import { activeMonth } from '$lib/state/month.svelte';
 	import { createMonthData } from '$lib/state/monthData.svelte';
 	import { formatCurrency } from '$lib/format/currency';
+	import { Avatar } from '$lib/components/ui/avatar';
+	import * as Card from '$lib/components/ui/card';
 	import BalanceCard from '$lib/components/BalanceCard.svelte';
 	import MoneySummaryCard from '$lib/components/MoneySummaryCard.svelte';
 	import MonthNavigator from '$lib/components/MonthNavigator.svelte';
@@ -14,6 +16,7 @@
 	import TransactionRow from '$lib/components/TransactionRow.svelte';
 	import SegmentedControl from '$lib/components/SegmentedControl.svelte';
 	import TransactionDetail from '$lib/components/TransactionDetail.svelte';
+	import Icon from '$lib/components/Icon.svelte';
 	import type { Transaction } from '$lib/db/schema';
 
 	const data = createMonthData();
@@ -109,24 +112,19 @@
 	let selectedTx = $state<Transaction | null>(null);
 </script>
 
-<div class="dash" bind:this={pageEl}>
-	<header class="head reveal">
-		<div class="who">
-			<span class="hi">Hi, {settings.value.userName}</span>
-			<svg
-				width="14"
-				height="14"
-				viewBox="0 0 24 24"
-				fill="none"
-				stroke="currentColor"
-				stroke-width="3"
-				stroke-linecap="round"
-				stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg
-			>
+<div class="dash flex flex-col gap-5" bind:this={pageEl}>
+	<header class="reveal flex items-center justify-between gap-3 pt-1">
+		<div class="min-w-0">
+			<p class="micro-label">Overview</p>
+			<h1 class="mt-0.5 truncate text-[20px] font-bold tracking-tight text-foreground">
+				Hi, {settings.value.userName}
+			</h1>
 		</div>
-		<div class="avatar" style="background: linear-gradient(135deg, #93c5fd, #c4b5fd)">
-			{settings.value.userName.charAt(0).toUpperCase()}
-		</div>
+		<Avatar
+			name={settings.value.userName}
+			size={42}
+			class="border border-border shadow-[var(--shadow-sm)]"
+		/>
 	</header>
 
 	<div class="reveal">
@@ -142,25 +140,32 @@
 		/>
 	</div>
 
-	<div class="account-row reveal">
-		<div class="acc cash">
-			<span class="acc-dot"></span>
-			<span class="acc-label">Cash</span>
-			<span class="acc-val">{formatCurrency(data.balanceCash, settings.value.defaultCurrency)}</span
-			>
+	<div class="reveal grid grid-cols-2 gap-3">
+		<div
+			class="flex items-center gap-2.5 rounded-[14px] border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-sm)]"
+		>
+			<span class="size-2 shrink-0 rounded-full" style="background: var(--green)"></span>
+			<span class="micro-label">Cash</span>
+			<span class="t-num ml-auto text-[13.5px] font-bold text-foreground">
+				{formatCurrency(data.balanceCash, settings.value.defaultCurrency)}
+			</span>
 		</div>
-		<div class="acc debit">
-			<span class="acc-dot"></span>
-			<span class="acc-label">Debit</span>
-			<span class="acc-val"
-				>{formatCurrency(data.balanceDebit, settings.value.defaultCurrency)}</span
-			>
+		<div
+			class="flex items-center gap-2.5 rounded-[14px] border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-sm)]"
+		>
+			<span class="size-2 shrink-0 rounded-full" style="background: var(--blue)"></span>
+			<span class="micro-label">Debit</span>
+			<span class="t-num ml-auto text-[13.5px] font-bold text-foreground">
+				{formatCurrency(data.balanceDebit, settings.value.defaultCurrency)}
+			</span>
 		</div>
 	</div>
 
-	<div class="month-row reveal"><MonthNavigator /></div>
+	<div class="reveal flex justify-center py-0.5">
+		<MonthNavigator />
+	</div>
 
-	<div class="summary-row reveal">
+	<div class="summary-row reveal grid grid-cols-2 gap-3">
 		<MoneySummaryCard
 			title="Money In"
 			value={data.monthIn}
@@ -179,9 +184,9 @@
 		/>
 	</div>
 
-	<section class="card section reveal">
-		<div class="section-head">
-			<h3>Categories</h3>
+	<Card.Root class="reveal p-5">
+		<div class="mb-4 flex items-center justify-between gap-2">
+			<p class="micro-label">Kategori</p>
 			<SegmentedControl
 				options={[
 					{ value: 'expense', label: 'Pengeluaran' },
@@ -193,44 +198,55 @@
 			/>
 		</div>
 		{#if pieSlices.length === 0}
-			<p class="empty">
+			<p class="rounded-[14px] bg-muted px-4 py-6 text-center text-[13px] text-muted-foreground">
 				Belum ada transaksi {pieMode === 'income' ? 'pemasukan' : 'pengeluaran'} bulan ini.
 			</p>
 		{:else}
-			<div class="pie-row">
-				<PieChart
-					slices={pieSlices}
-					size={180}
-					centerValue={Math.round(
-						pieMode === 'income' ? data.monthIn : data.monthSpent
-					).toLocaleString('en-US')}
-					centerLabel={pieMode === 'income' ? 'In' : 'Spent'}
-				/>
-				<ul class="legend">
+			<div class="flex items-center gap-4">
+				<div class="shrink-0">
+					<PieChart
+						slices={pieSlices}
+						size={160}
+						centerValue={Math.round(
+							pieMode === 'income' ? data.monthIn : data.monthSpent
+						).toLocaleString('en-US')}
+						centerLabel={pieMode === 'income' ? 'In' : 'Spent'}
+					/>
+				</div>
+				<ul class="min-w-0 flex-1 space-y-2.5">
 					{#each pieSlices.slice(0, 6) as s (s.id)}
-						<li>
-							<span class="dot" style="background: {s.color}"></span>
-							<span class="leg-name">{s.label}</span>
-							<span class="leg-val"
-								>{Math.round(
-									(s.value / (pieSlices.reduce((a, b) => a + b.value, 0) || 1)) * 100
-								)}%</span
+						<li class="flex items-center gap-2.5 text-[13px]">
+							<span class="size-2.5 shrink-0 rounded-full" style="background: {s.color}"></span>
+							<span class="min-w-0 flex-1 truncate font-medium tracking-tight text-foreground"
+								>{s.label}</span
 							>
+							<span class="t-num text-[12.5px] font-bold text-muted-foreground">
+								{Math.round((s.value / (pieSlices.reduce((a, b) => a + b.value, 0) || 1)) * 100)}%
+							</span>
 						</li>
 					{/each}
 				</ul>
 			</div>
 		{/if}
-	</section>
+	</Card.Root>
 
-	<section class="card section reveal">
-		<div class="section-head">
-			<h3>Transaksi Terbaru</h3>
-			<a href="/money/spent" class="see-all">Lihat semua</a>
+	<Card.Root class="reveal p-5">
+		<div class="mb-1 flex items-center justify-between gap-2">
+			<p class="micro-label">Transaksi Terbaru</p>
+			<a
+				href="/money/spent"
+				class="inline-flex items-center gap-1 text-[12.5px] font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground"
+			>
+				Lihat semua
+				<Icon name="arrow-right" size={14} strokeWidth={2.5} />
+			</a>
 		</div>
 		{#if recent.length === 0}
-			<p class="empty">
-				Belum ada transaksi bulan ini. Tekan tombol <strong>Add</strong> untuk mencatat.
+			<p
+				class="mt-3 rounded-[14px] border border-dashed border-border px-4 py-6 text-center text-[13px] leading-relaxed text-muted-foreground"
+			>
+				Belum ada transaksi bulan ini. Tekan tombol
+				<strong class="font-semibold text-foreground">Add</strong> untuk mencatat.
 			</p>
 		{:else}
 			<div role="list">
@@ -244,7 +260,7 @@
 				{/each}
 			</div>
 		{/if}
-	</section>
+	</Card.Root>
 </div>
 
 <TransactionDetail
@@ -253,150 +269,3 @@
 	currency={settings.value.defaultCurrency}
 	onClose={() => (selectedTx = null)}
 />
-
-<style>
-	.dash {
-		display: flex;
-		flex-direction: column;
-		gap: 14px;
-	}
-	.head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		padding: 4px 2px 8px;
-	}
-	.who {
-		display: flex;
-		align-items: center;
-		gap: 4px;
-		color: var(--text-2);
-	}
-	.hi {
-		font-size: 15px;
-		font-weight: 600;
-		color: var(--text);
-	}
-	.avatar {
-		width: 38px;
-		height: 38px;
-		border-radius: 999px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: 700;
-		color: #fff;
-		font-size: 15px;
-		box-shadow: var(--shadow-sm);
-	}
-	.month-row {
-		display: flex;
-		justify-content: center;
-		padding: 4px 0;
-	}
-	.account-row {
-		display: flex;
-		gap: 12px;
-	}
-	.acc {
-		flex: 1;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		background: var(--surface);
-		border-radius: var(--r-md);
-		box-shadow: var(--shadow-sm);
-		padding: 12px 14px;
-	}
-	.acc-dot {
-		width: 9px;
-		height: 9px;
-		border-radius: 999px;
-		flex-shrink: 0;
-	}
-	.acc.cash .acc-dot {
-		background: var(--green);
-	}
-	.acc.debit .acc-dot {
-		background: var(--blue);
-	}
-	.acc-label {
-		font-size: 12px;
-		color: var(--text-2);
-		font-weight: 600;
-	}
-	.acc-val {
-		margin-left: auto;
-		font-size: 14px;
-		font-weight: 800;
-		font-variant-numeric: tabular-nums;
-	}
-	.summary-row {
-		display: flex;
-		gap: 12px;
-	}
-	.section {
-		padding: 16px 18px 14px;
-	}
-	.section-head {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 12px;
-	}
-	.section-head h3 {
-		margin: 0;
-		font-size: 16px;
-		font-weight: 700;
-	}
-	.see-all {
-		font-size: 12px;
-		font-weight: 600;
-		color: var(--text-2);
-	}
-	.pie-row {
-		display: flex;
-		gap: 16px;
-		align-items: center;
-	}
-	.legend {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-		flex: 1;
-		min-width: 0;
-	}
-	.legend li {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 13px;
-	}
-	.dot {
-		width: 9px;
-		height: 9px;
-		border-radius: 999px;
-		flex-shrink: 0;
-	}
-	.leg-name {
-		flex: 1;
-		color: var(--text);
-		font-weight: 500;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		white-space: nowrap;
-	}
-	.leg-val {
-		font-weight: 700;
-		color: var(--text-2);
-	}
-	.empty {
-		font-size: 13px;
-		color: var(--text-2);
-		text-align: center;
-		padding: 16px 0;
-	}
-</style>

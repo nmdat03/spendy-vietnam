@@ -98,43 +98,44 @@
 		display: flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 12px;
-		padding: 12px 0;
+		gap: 14px;
+		padding: 10px 0 4px;
 	}
 	.amt-icon {
-		width: 52px;
-		height: 52px;
-		border-radius: 16px;
+		width: 56px;
+		height: 56px;
+		border-radius: 18px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		background: color-mix(in srgb, var(--c) 14%, var(--surface));
+		background: color-mix(in srgb, var(--c) 13%, var(--card));
 	}
 	.amt {
-		font-size: 28px;
+		font-size: 32px;
 		font-weight: 800;
-		letter-spacing: -0.02em;
+		letter-spacing: -0.03em;
 		font-variant-numeric: tabular-nums;
 	}
 	.amt.income {
-		color: var(--green);
+		color: var(--success);
 	}
 	.amt.expense {
-		color: var(--red);
+		color: var(--foreground);
 	}
 	.info-grid {
 		display: flex;
 		flex-direction: column;
 		gap: 0;
-		background: var(--surface-2);
-		border-radius: var(--r-md);
-		padding: 4px 16px;
+		background: var(--muted);
+		border-radius: 16px;
+		padding: 2px 16px;
 	}
 	.info-row {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		padding: 12px 0;
+		gap: 16px;
+		padding: 13px 0;
 		border-bottom: 1px solid var(--border);
 	}
 	.info-row:last-child {
@@ -142,22 +143,23 @@
 	}
 	.i-label {
 		font-size: 13px;
-		color: var(--text-2);
-		font-weight: 600;
+		color: var(--muted-foreground);
+		font-weight: 550;
 	}
 	.i-val {
 		font-size: 14px;
 		font-weight: 600;
-		color: var(--text);
+		color: var(--foreground);
 		text-align: right;
+		font-variant-numeric: tabular-nums;
 	}
 	.del-btn {
 		width: 100%;
-		height: 48px;
-		border-radius: 14px;
-		background: color-mix(in srgb, var(--red) 12%, var(--surface));
-		color: var(--red);
-		font-weight: 700;
+		height: 50px;
+		border-radius: 999px;
+		background: color-mix(in srgb, var(--destructive) 10%, var(--card));
+		color: var(--destructive);
+		font-weight: 650;
 		font-size: 15px;
 		display: inline-flex;
 		align-items: center;
@@ -170,7 +172,7 @@
 	.confirm-box p {
 		margin: 0 0 12px;
 		font-size: 14px;
-		color: var(--text-2);
+		color: var(--muted-foreground);
 	}
 	.confirm-actions {
 		display: flex;
@@ -178,19 +180,20 @@
 	}
 	.cancel-btn {
 		flex: 1;
-		height: 44px;
-		border-radius: 12px;
-		background: var(--surface-2);
+		height: 46px;
+		border-radius: 999px;
+		background: var(--muted);
+		color: var(--foreground);
 		font-weight: 600;
 		font-size: 14px;
 	}
 	.confirm-del {
 		flex: 1;
-		height: 44px;
-		border-radius: 12px;
-		background: var(--red);
-		color: #fff;
-		font-weight: 700;
+		height: 46px;
+		border-radius: 999px;
+		background: var(--destructive);
+		color: var(--destructive-foreground);
+		font-weight: 650;
 		font-size: 14px;
 	}
 </style>

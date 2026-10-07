@@ -40,6 +40,21 @@
 		Trash2,
 		ArrowUpRight,
 		ArrowDownRight,
+		Check,
+		X,
+		Info,
+		ChevronDown,
+		Sun,
+		Moon,
+		Monitor,
+		Download,
+		Upload,
+		ArrowRight,
+		ArrowDownLeft,
+		Sparkles,
+		ShieldCheck,
+		Banknote,
+		CalendarDays,
 		type Icon as IconType
 	} from 'lucide-svelte';
 
@@ -81,7 +96,22 @@
 		pencil: Pencil,
 		'trash-2': Trash2,
 		'arrow-up-right': ArrowUpRight,
-		'arrow-down-right': ArrowDownRight
+		'arrow-down-right': ArrowDownRight,
+		check: Check,
+		x: X,
+		info: Info,
+		'chevron-down': ChevronDown,
+		sun: Sun,
+		moon: Moon,
+		monitor: Monitor,
+		download: Download,
+		upload: Upload,
+		'arrow-right': ArrowRight,
+		'arrow-down-left': ArrowDownLeft,
+		sparkles: Sparkles,
+		'shield-check': ShieldCheck,
+		banknote: Banknote,
+		'calendar-days': CalendarDays
 	};
 
 	export const ICON_NAMES = Object.keys(map);

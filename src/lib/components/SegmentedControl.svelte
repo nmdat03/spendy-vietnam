@@ -73,18 +73,22 @@
 		position: absolute;
 		top: 4px;
 		height: calc(100% - 8px);
-		background: #0b0f17;
+		background: var(--primary);
 		border-radius: 999px;
 		z-index: 0;
 		pointer-events: none;
+		box-shadow:
+			0 2px 8px oklch(0.185 0.012 265 / 0.18),
+			0 1px 2px oklch(0.185 0.012 265 / 0.12);
 	}
 	.seg-item {
 		position: relative;
 		z-index: 1;
 		border: none;
 		background: transparent;
-		color: var(--text-2);
+		color: var(--muted-foreground);
 		font-weight: 600;
+		letter-spacing: -0.01em;
 		border-radius: 999px;
 		transition: color 0.25s ease;
 		white-space: nowrap;
@@ -98,6 +102,6 @@
 		font-size: 13px;
 	}
 	.seg-item.active {
-		color: #fff;
+		color: var(--primary-foreground);
 	}
 </style>
