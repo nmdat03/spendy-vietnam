@@ -37,16 +37,16 @@
 	// ---- Carousel ----
 	const slides = [
 		{
-			title: 'Catat dalam hitungan detik',
-			desc: 'Input nominal & kategori secepat mungkin lewat keypad besar.'
+			title: 'Ghi chép trong vài giây',
+			desc: 'Nhập số tiền và danh mục nhanh chóng bằng bàn phím tiện lợi.'
 		},
 		{
-			title: 'Lihat ke mana uangmu pergi',
-			desc: 'Insight otomatis lewat grafik pie & tren per kategori.'
+			title: 'Theo dõi dòng tiền của bạn',
+			desc: 'Xem thống kê qua biểu đồ và xu hướng theo danh mục.'
 		},
 		{
-			title: 'Aman & offline-first',
-			desc: 'Data tersimpan di perangkatmu, sinkron otomatis saat online.'
+			title: 'Riêng tư và hoạt động ngoại tuyến',
+			desc: 'Dữ liệu được lưu trên thiết bị của bạn, không cần tài khoản.'
 		}
 	];
 	let slide = $state(0);
@@ -374,9 +374,9 @@
 			<h1 class="wordmark" bind:this={wordEl}>
 				{#each wordLetters as l, i (i)}<span>{l}</span>{/each}
 			</h1>
-			<p class="tagline" bind:this={taglineEl}>Track your spending</p>
+			<p class="tagline" bind:this={taglineEl}>Quản lý chi tiêu thông minh</p>
 			<div class="intro-cta">
-				<Button size="lg" class="min-w-[200px]" onclick={goCarousel}>Mulai</Button>
+				<Button size="lg" class="min-w-[200px]" onclick={goCarousel}>Bắt đầu</Button>
 			</div>
 		</div>
 	</section>
@@ -386,7 +386,7 @@
 		class="phase carousel"
 		class:active={phase === 'carousel'}
 		bind:this={carouselEl}
-		aria-label="Pengenalan"
+		aria-label="Giới thiệu"
 	>
 		<div class="back">
 			<Button
@@ -405,7 +405,7 @@
 				class="text-muted-foreground"
 				onclick={() => transitionTo('name')}
 			>
-				Lewati
+				Bỏ qua
 			</Button>
 		</div>
 
@@ -513,9 +513,9 @@
 		<div class="cta-row">
 			<Button size="lg" class="w-full" onclick={nextSlide}>
 				{#if isLastSlide}
-					Mulai
+					Bắt đầu
 				{:else}
-					Lanjut
+					Tiếp tục
 				{/if}
 			</Button>
 		</div>
@@ -538,15 +538,15 @@
 				<Icon name="chevron-left" size={18} />
 			</Button>
 		</div>
-		<h2 class="setup-title reveal">Hai, siapa nama kamu?</h2>
+		<h2 class="setup-title reveal">Xin chào! Bạn tên gì?</h2>
 		<p class="setup-sub reveal">
-			Masukkan nama panggilanmu supaya kami bisa menyapa dengan personal.
+			Nhập tên để cá nhân hóa trải nghiệm.
 		</p>
 		<div class="name-input-wrap reveal">
 			<input
 				class="name-input"
 				type="text"
-				placeholder="Nama panggilan…"
+				placeholder="Tên của bạn…"
 				maxlength="20"
 				bind:value={userName}
 				onkeydown={(e) => e.key === 'Enter' && userName.trim() && transitionTo('setup')}
@@ -557,7 +557,7 @@
 				size="lg"
 				class="w-full"
 				disabled={!userName.trim()}
-				onclick={() => transitionTo('setup')}>Lanjut</Button
+				onclick={() => transitionTo('setup')}>Tiếp tục</Button
 			>
 		</div>
 	</section>
@@ -579,12 +579,12 @@
 				<Icon name="chevron-left" size={18} />
 			</Button>
 		</div>
-		<h2 class="setup-title reveal">Yuk, mulai dari saldo kamu sekarang</h2>
-		<p class="setup-sub reveal">Supaya laporan pengeluaran akurat sejak hari pertama.</p>
+		<h2 class="setup-title reveal">Bắt đầu với số dư hiện tại</h2>
+		<p class="setup-sub reveal">Giúp thống kê tài chính chính xác ngay từ đầu.</p>
 
 		<!-- Total preview with SlotNumber reveal. -->
 		<div class="total-card reveal" bind:this={totalCardEl}>
-			<span class="micro-label">Saldo Awal Total</span>
+			<span class="micro-label">TỔNG SỐ DƯ BAN ĐẦU</span>
 			<div class="total-value t-num">
 				<SlotNumber value={totalSaldo} {currency} duration={1.1} stagger={0.05} />
 			</div>
@@ -600,7 +600,7 @@
 				aria-label="Akun Debit"
 			>
 				<span class="acc-ico debit"><Icon name="credit-card" size={20} /></span>
-				<span class="acc-name">Debit / Bank</span>
+				<span class="acc-name">Ngân hàng</span>
 				<span class="acc-val"
 					>{currencySymbol(currency)}{parseNum(rawDebit).toLocaleString('en-US')}</span
 				>
@@ -613,7 +613,7 @@
 				aria-label="Akun Cash"
 			>
 				<span class="acc-ico cash"><Icon name="wallet" size={20} /></span>
-				<span class="acc-name">Cash / Tunai</span>
+				<span class="acc-name">Tiền mặt</span>
 				<span class="acc-val"
 					>{currencySymbol(currency)}{parseNum(rawCash).toLocaleString('en-US')}</span
 				>
@@ -637,12 +637,12 @@
 				size="sm"
 				class="text-muted-foreground"
 				onclick={skipSaldo}
-				aria-label="Lewati langkah ini"
+				aria-label="Bỏ qua langkah ini"
 			>
-				Lewati langkah ini
+				Bỏ qua langkah ini
 			</Button>
 			<Button size="lg" class="w-full" disabled={finishing} onclick={finish}>
-				{finishing ? 'Menyiapkan…' : 'Mulai Pakai Spendy'}
+				{finishing ? 'Menyiapkan…' : 'Bắt đầu Pakai Spendy'}
 			</Button>
 		</div>
 	</section>
