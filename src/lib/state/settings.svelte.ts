@@ -17,7 +17,7 @@ interface SettingsState {
 }
 
 const defaults: SettingsState = {
-	defaultCurrency: 'IDR',
+	defaultCurrency: 'VND',
 	theme: 'auto',
 	autoSyncEnabled: true,
 	lastSyncedAt: null,
