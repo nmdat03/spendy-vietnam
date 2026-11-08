@@ -3,7 +3,7 @@
 
 const formatterCache = new Map<string, Intl.NumberFormat>();
 
-function getFormatter(currency: string, locale = 'en-US'): Intl.NumberFormat {
+function getFormatter(currency: string, locale = 'vi-VN'): Intl.NumberFormat {
 	const key = `${locale}:${currency}`;
 	let fmt = formatterCache.get(key);
 	if (!fmt) {
@@ -57,7 +57,7 @@ export function splitAmount(
 	const factor = 10 ** digits;
 	const intPart = Math.floor(abs);
 	const fracPart = Math.round((abs - intPart) * factor);
-	const integerStr = intPart.toLocaleString('en-US');
+	const integerStr = intPart.toLocaleString('vi-VN');
 	const fractionStr = digits > 0 ? fracPart.toString().padStart(digits, '0') : '';
 	return {
 		sign: negative ? '-' : '',

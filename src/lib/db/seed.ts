@@ -21,7 +21,7 @@ export function seedDefaultCategories(): Omit<Category, 'id'>[] {
 
 export function defaultSettings(): SettingRow[] {
 	return [
-		{ key: 'defaultCurrency', value: 'IDR' },
+		{ key: 'defaultCurrency', value: 'VND' },
 		{ key: 'theme', value: 'auto' },
 		{ key: 'autoSyncEnabled', value: true },
 		{ key: 'lastSyncedAt', value: null },

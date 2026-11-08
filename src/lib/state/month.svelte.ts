@@ -37,7 +37,7 @@ export const activeMonth = {
 };
 
 export function monthLabel(ref: MonthRef): string {
-	return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(
+	return new Intl.DateTimeFormat('vi-VN', { month: 'long', year: 'numeric' }).format(
 		new Date(ref.year, ref.month, 1)
 	);
 }
