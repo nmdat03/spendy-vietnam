@@ -37,8 +37,8 @@
 		const all = [...data.allTransactions].sort((a, b) => +new Date(a.date) - +new Date(b.date));
 		// Opening balance = starting balances + net of all tx before the period.
 		let cum =
-			settings.value.startingBalanceTiền mặt +
-			settings.value.startingBalanceNgân hàng +
+			settings.value.startingBalanceCash +
+			settings.value.startingBalanceDebit +
 			all
 				.filter((t) => +new Date(t.date) < start)
 				.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
@@ -67,8 +67,8 @@
 			return d >= start && d <= now;
 		});
 		const opening =
-			settings.value.startingBalanceTiền mặt +
-			settings.value.startingBalanceNgân hàng +
+			settings.value.startingBalanceCash +
+			settings.value.startingBalanceDebit +
 			data.allTransactions
 				.filter((t) => +new Date(t.date) < start)
 				.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
