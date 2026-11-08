@@ -13,6 +13,8 @@ export interface MonthData {
 	loading: boolean;
 	monthIn: number;
 	monthSpent: number;
+	monthOpeningBalance: number;
+	monthClosingBalance: number;
 	balance: number;
 	balanceCash: number;
 	balanceDebit: number;
@@ -71,6 +73,13 @@ export function createMonthData(): MonthData {
 	const monthSpent = $derived(
 		transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + t.amount, 0)
 	);
+	const monthOpeningBalance = $derived.by(() => {
+		const { start } = monthBounds(activeMonth.value);
+		return settings.value.startingBalanceCash + settings.value.startingBalanceDebit + allTxs
+			.filter((t) => +new Date(t.date) < +start)
+			.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
+	});
+	const monthClosingBalance = $derived(monthOpeningBalance + monthIn - monthSpent);
 	// Net per-account movement from transactions (income - expense).
 	const netCash = $derived(
 		allTxs
@@ -114,6 +123,12 @@ export function createMonthData(): MonthData {
 		},
 		get monthSpent() {
 			return monthSpent;
+		},
+		get monthOpeningBalance() {
+			return monthOpeningBalance;
+		},
+		get monthClosingBalance() {
+			return monthClosingBalance;
 		},
 		get balance() {
 			return balance;
