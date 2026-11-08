@@ -165,6 +165,17 @@
 		<MonthNavigator />
 	</div>
 
+	<div class="reveal grid grid-cols-2 gap-3">
+		<div class="rounded-[14px] border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-sm)]">
+			<p class="micro-label">Số dư đầu tháng</p>
+			<p class="t-num mt-1 text-[14px] font-bold text-foreground">{formatCurrency(data.monthOpeningBalance, settings.value.defaultCurrency)}</p>
+		</div>
+		<div class="rounded-[14px] border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-sm)]">
+			<p class="micro-label">Số dư cuối tháng</p>
+			<p class="t-num mt-1 text-[14px] font-bold text-foreground">{formatCurrency(data.monthClosingBalance, settings.value.defaultCurrency)}</p>
+		</div>
+	</div>
+
 	<div class="summary-row reveal grid grid-cols-2 gap-3">
 		<MoneySummaryCard
 			title="Tổng thu"
