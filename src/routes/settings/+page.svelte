@@ -6,7 +6,7 @@
 	import { liveQuery } from 'dexie';
 	import { db, addCategory, updateCategory, deleteCategory } from '$lib/db';
 	import { settings } from '$lib/state/settings.svelte';
-	import { createMonthDỮ LIỆU } from '$lib/state/monthDỮ LIỆU.svelte';
+	import { createMonthData } from '$lib/state/monthData.svelte';
 	import { SUPPORTED_CURRENCIES, formatCurrency, currencySymbol } from '$lib/format/currency';
 	import type { Category, TxType } from '$lib/db/schema';
 	import Icon, { ICON_NAMES } from '$lib/components/Icon.svelte';
@@ -19,7 +19,7 @@
 	import { toast } from '$lib/components/ui/toaster';
 
 	// Reactive data hook so the profile shows the live total balance.
-	const data = createMonthDỮ LIỆU();
+	const data = createMonthData();
 
 	let categories = $state<Category[]>([]);
 	$effect(() => {
