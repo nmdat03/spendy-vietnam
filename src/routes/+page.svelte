@@ -147,7 +147,7 @@
 			<span class="size-2 shrink-0 rounded-full" style="background: var(--green)"></span>
 			<span class="micro-label">Tiền mặt</span>
 			<span class="t-num ml-auto text-[13.5px] font-bold text-foreground">
-				{formatCurrency(data.balanceTiền mặt, settings.value.defaultCurrency)}
+				{formatCurrency(data.balanceCash, settings.value.defaultCurrency)}
 			</span>
 		</div>
 		<div
@@ -156,7 +156,7 @@
 			<span class="size-2 shrink-0 rounded-full" style="background: var(--blue)"></span>
 			<span class="micro-label">Ngân hàng</span>
 			<span class="t-num ml-auto text-[13.5px] font-bold text-foreground">
-				{formatCurrency(data.balanceNgân hàng, settings.value.defaultCurrency)}
+				{formatCurrency(data.balanceDebit, settings.value.defaultCurrency)}
 			</span>
 		</div>
 	</div>
