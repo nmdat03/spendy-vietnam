@@ -162,7 +162,7 @@
 	}
 
 	// Export / import.
-	async function exportDỮ LIỆU() {
+	async function exportData() {
 		try {
 			const dump = {
 				transactions: await db.transactions.toArray(),
@@ -182,7 +182,7 @@
 			toast('Export gagal', 'error');
 		}
 	}
-	async function importDỮ LIỆU(e: Event) {
+	async function importData(e: Event) {
 		const input = e.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
@@ -193,7 +193,7 @@
 			if (dump.transactions) await db.transactions.bulkPut(dump.transactions);
 			if (dump.settings) await db.settings.bulkPut(dump.settings);
 			await settings.load();
-			toast('DỮ LIỆU berhasil diimpor', 'success');
+			toast('Data imported successfully', 'success');
 		} catch {
 			toast('Import gagal — file tidak valid', 'error');
 		} finally {
@@ -368,10 +368,10 @@
 		</div>
 	</section>
 
-	<!-- DỮ LIỆU -->
-	<p class="micro-label sec-label reveal">DỮ LIỆU</p>
+	<!-- Data -->
+	<p class="micro-label sec-label reveal">DATA</p>
 	<section class="card reveal">
-		<button class="row" onclick={exportDỮ LIỆU}>
+		<button class="row" onclick={exportData}>
 			<span class="ico-bubble"><Icon name="download" size={18} /></span>
 			<div class="row-text">
 				<span class="row-title">Xuất dữ liệu</span>
@@ -386,7 +386,7 @@
 				<span class="row-desc">Khôi phục từ tệp sao lưu JSON</span>
 			</div>
 			<Icon name="chevron-right" size={16} class="shrink-0 text-muted-foreground/60" />
-			<input type="file" accept="application/json" onchange={importDỮ LIỆU} hidden />
+			<input type="file" accept="application/json" onchange={importData} hidden />
 		</label>
 	</section>
 
