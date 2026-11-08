@@ -37,8 +37,8 @@
 		const all = [...data.allTransactions].sort((a, b) => +new Date(a.date) - +new Date(b.date));
 		// Opening balance = starting balances + net of all tx before the period.
 		let cum =
-			settings.value.startingBalanceCash +
-			settings.value.startingBalanceDebit +
+			settings.value.startingBalanceTiền mặt +
+			settings.value.startingBalanceNgân hàng +
 			all
 				.filter((t) => +new Date(t.date) < start)
 				.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
@@ -67,8 +67,8 @@
 			return d >= start && d <= now;
 		});
 		const opening =
-			settings.value.startingBalanceCash +
-			settings.value.startingBalanceDebit +
+			settings.value.startingBalanceTiền mặt +
+			settings.value.startingBalanceNgân hàng +
 			data.allTransactions
 				.filter((t) => +new Date(t.date) < start)
 				.reduce((s, t) => s + (t.type === 'income' ? t.amount : -t.amount), 0);
@@ -86,7 +86,7 @@
 		const groups = pieMode === 'income' ? data.byCategoryIncome : data.byCategoryExpense;
 		return groups.map((g, i) => ({
 			id: g.cat?.id ?? i,
-			label: g.cat?.name ?? 'Uncategorized',
+			label: g.cat?.name ?? 'Chưa phân loại',
 			value: g.amount,
 			color: g.cat?.color ?? '#94a3b8'
 		}));
@@ -115,9 +115,9 @@
 <div class="dash flex flex-col gap-5" bind:this={pageEl}>
 	<header class="reveal flex items-center justify-between gap-3 pt-1">
 		<div class="min-w-0">
-			<p class="micro-label">Overview</p>
+			<p class="micro-label">TỔNG QUAN</p>
 			<h1 class="mt-0.5 truncate text-[20px] font-bold tracking-tight text-foreground">
-				Hi, {settings.value.userName}
+				Xin chào, {settings.value.userName}
 			</h1>
 		</div>
 		<Avatar
@@ -145,18 +145,18 @@
 			class="flex items-center gap-2.5 rounded-[14px] border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-sm)]"
 		>
 			<span class="size-2 shrink-0 rounded-full" style="background: var(--green)"></span>
-			<span class="micro-label">Cash</span>
+			<span class="micro-label">Tiền mặt</span>
 			<span class="t-num ml-auto text-[13.5px] font-bold text-foreground">
-				{formatCurrency(data.balanceCash, settings.value.defaultCurrency)}
+				{formatCurrency(data.balanceTiền mặt, settings.value.defaultCurrency)}
 			</span>
 		</div>
 		<div
 			class="flex items-center gap-2.5 rounded-[14px] border border-border bg-card px-3.5 py-3 shadow-[var(--shadow-sm)]"
 		>
 			<span class="size-2 shrink-0 rounded-full" style="background: var(--blue)"></span>
-			<span class="micro-label">Debit</span>
+			<span class="micro-label">Ngân hàng</span>
 			<span class="t-num ml-auto text-[13.5px] font-bold text-foreground">
-				{formatCurrency(data.balanceDebit, settings.value.defaultCurrency)}
+				{formatCurrency(data.balanceNgân hàng, settings.value.defaultCurrency)}
 			</span>
 		</div>
 	</div>
@@ -167,7 +167,7 @@
 
 	<div class="summary-row reveal grid grid-cols-2 gap-3">
 		<MoneySummaryCard
-			title="Money In"
+			title="Tổng thu"
 			value={data.monthIn}
 			currency={settings.value.defaultCurrency}
 			kind="in"
@@ -175,7 +175,7 @@
 			href="/money/in"
 		/>
 		<MoneySummaryCard
-			title="Money Spent"
+			title="Tổng chi"
 			value={data.monthSpent}
 			currency={settings.value.defaultCurrency}
 			kind="spent"
@@ -186,11 +186,11 @@
 
 	<Card.Root class="reveal p-5">
 		<div class="mb-4 flex items-center justify-between gap-2">
-			<p class="micro-label">Kategori</p>
+			<p class="micro-label">CHI TIÊU THEO DANH MỤC</p>
 			<SegmentedControl
 				options={[
-					{ value: 'expense', label: 'Pengeluaran' },
-					{ value: 'income', label: 'Pemasukan' }
+					{ value: 'expense', label: 'Chi tiêu' },
+					{ value: 'income', label: 'Thu nhập' }
 				]}
 				value={pieMode}
 				onchange={(v) => (pieMode = v as 'income' | 'expense')}
@@ -199,7 +199,7 @@
 		</div>
 		{#if pieSlices.length === 0}
 			<p class="rounded-[14px] bg-muted px-4 py-6 text-center text-[13px] text-muted-foreground">
-				Belum ada transaksi {pieMode === 'income' ? 'pemasukan' : 'pengeluaran'} bulan ini.
+				Tháng này chưa có giao dịch {pieMode === 'income' ? 'thu nhập' : 'chi tiêu'}.
 			</p>
 		{:else}
 			<div class="flex items-center gap-4">
@@ -210,7 +210,7 @@
 						centerValue={Math.round(
 							pieMode === 'income' ? data.monthIn : data.monthSpent
 						).toLocaleString('en-US')}
-						centerLabel={pieMode === 'income' ? 'In' : 'Spent'}
+						centerLabel={pieMode === 'income' ? 'Thu' : 'Đã chi'}
 					/>
 				</div>
 				<ul class="min-w-0 flex-1 space-y-2.5">
@@ -232,12 +232,12 @@
 
 	<Card.Root class="reveal p-5">
 		<div class="mb-1 flex items-center justify-between gap-2">
-			<p class="micro-label">Transaksi Terbaru</p>
+			<p class="micro-label">GIAO DỊCH GẦN ĐÂY</p>
 			<a
 				href="/money/spent"
 				class="inline-flex items-center gap-1 text-[12.5px] font-semibold tracking-tight text-muted-foreground transition-colors hover:text-foreground"
 			>
-				Lihat semua
+				Xem tất cả
 				<Icon name="arrow-right" size={14} strokeWidth={2.5} />
 			</a>
 		</div>
@@ -245,8 +245,8 @@
 			<p
 				class="mt-3 rounded-[14px] border border-dashed border-border px-4 py-6 text-center text-[13px] leading-relaxed text-muted-foreground"
 			>
-				Belum ada transaksi bulan ini. Tekan tombol
-				<strong class="font-semibold text-foreground">Add</strong> untuk mencatat.
+				Tháng này chưa có giao dịch. Nhấn nút
+				<strong class="font-semibold text-foreground">Add</strong> để ghi giao dịch.
 			</p>
 		{:else}
 			<div role="list">
