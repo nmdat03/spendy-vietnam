@@ -1,12 +1,12 @@
 <script lang="ts">
-	// Akun / Pengaturan: profile, category CRUD, currency, theme & backup.
+	// Akun / Cài đặt: profile, category CRUD, currency, theme & backup.
 	import { onMount } from 'svelte';
 	import { gsap, EASES } from '$lib/animations/gsap';
 	import { motionReduced } from '$lib/state/settings.svelte';
 	import { liveQuery } from 'dexie';
 	import { db, addCategory, updateCategory, deleteCategory } from '$lib/db';
 	import { settings } from '$lib/state/settings.svelte';
-	import { createMonthData } from '$lib/state/monthData.svelte';
+	import { createMonthDỮ LIỆU } from '$lib/state/monthDỮ LIỆU.svelte';
 	import { SUPPORTED_CURRENCIES, formatCurrency, currencySymbol } from '$lib/format/currency';
 	import type { Category, TxType } from '$lib/db/schema';
 	import Icon, { ICON_NAMES } from '$lib/components/Icon.svelte';
@@ -19,7 +19,7 @@
 	import { toast } from '$lib/components/ui/toaster';
 
 	// Reactive data hook so the profile shows the live total balance.
-	const data = createMonthData();
+	const data = createMonthDỮ LIỆU();
 
 	let categories = $state<Category[]>([]);
 	$effect(() => {
@@ -162,7 +162,7 @@
 	}
 
 	// Export / import.
-	async function exportData() {
+	async function exportDỮ LIỆU() {
 		try {
 			const dump = {
 				transactions: await db.transactions.toArray(),
@@ -182,7 +182,7 @@
 			toast('Export gagal', 'error');
 		}
 	}
-	async function importData(e: Event) {
+	async function importDỮ LIỆU(e: Event) {
 		const input = e.currentTarget as HTMLInputElement;
 		const file = input.files?.[0];
 		if (!file) return;
@@ -193,7 +193,7 @@
 			if (dump.transactions) await db.transactions.bulkPut(dump.transactions);
 			if (dump.settings) await db.settings.bulkPut(dump.settings);
 			await settings.load();
-			toast('Data berhasil diimpor', 'success');
+			toast('DỮ LIỆU berhasil diimpor', 'success');
 		} catch {
 			toast('Import gagal — file tidak valid', 'error');
 		} finally {
@@ -217,11 +217,11 @@
 
 <div class="settings" bind:this={root}>
 	<header class="head reveal">
-		<h1>Pengaturan</h1>
+		<h1>Cài đặt</h1>
 		<p class="sub">Preferensi, kategori &amp; data kamu</p>
 	</header>
 
-	<!-- Profile -->
+	<!-- Hồ sơ -->
 	<section class="card profile reveal">
 		<div class="avatar">{settings.value.userName.charAt(0).toUpperCase()}</div>
 		<div class="profile-meta">
@@ -279,7 +279,7 @@
 		<button class="row" onclick={() => (currencyOpen = true)}>
 			<span class="ico-bubble"><Icon name="banknote" size={18} /></span>
 			<div class="row-text">
-				<span class="row-title">Mata uang</span>
+				<span class="row-title">Đơn vị tiền tệ</span>
 				<span class="row-desc">Format nominal di seluruh app</span>
 			</div>
 			<span class="row-value">{currency}</span>
@@ -288,7 +288,7 @@
 		<button class="row" onclick={() => (accountOpen = true)}>
 			<span class="ico-bubble"><Icon name="wallet" size={18} /></span>
 			<div class="row-text">
-				<span class="row-title">Akun default</span>
+				<span class="row-title">Tài khoản mặc định</span>
 				<span class="row-desc">Terpilih otomatis saat catat baru</span>
 			</div>
 			<span class="row-value">{settings.value.defaultAccount === 'cash' ? 'Cash' : 'Debit'}</span>
@@ -368,30 +368,30 @@
 		</div>
 	</section>
 
-	<!-- Data -->
-	<p class="micro-label sec-label reveal">Data</p>
+	<!-- DỮ LIỆU -->
+	<p class="micro-label sec-label reveal">DỮ LIỆU</p>
 	<section class="card reveal">
-		<button class="row" onclick={exportData}>
+		<button class="row" onclick={exportDỮ LIỆU}>
 			<span class="ico-bubble"><Icon name="download" size={18} /></span>
 			<div class="row-text">
-				<span class="row-title">Export data</span>
-				<span class="row-desc">Unduh seluruh data sebagai JSON</span>
+				<span class="row-title">Xuất dữ liệu</span>
+				<span class="row-desc">Tải toàn bộ dữ liệu dạng JSON</span>
 			</div>
 			<Icon name="chevron-right" size={16} class="shrink-0 text-muted-foreground/60" />
 		</button>
 		<label class="row">
 			<span class="ico-bubble"><Icon name="upload" size={18} /></span>
 			<div class="row-text">
-				<span class="row-title">Import data</span>
-				<span class="row-desc">Pulihkan dari file backup JSON</span>
+				<span class="row-title">Nhập dữ liệu</span>
+				<span class="row-desc">Khôi phục từ tệp sao lưu JSON</span>
 			</div>
 			<Icon name="chevron-right" size={16} class="shrink-0 text-muted-foreground/60" />
-			<input type="file" accept="application/json" onchange={importData} hidden />
+			<input type="file" accept="application/json" onchange={importDỮ LIỆU} hidden />
 		</label>
 	</section>
 
 	<!-- Hidden: reset onboarding for testing/demo. -->
-	<button class="reset-onb reveal" onclick={resetOnboarding}>Reset Onboarding</button>
+	<button class="reset-onb reveal" onclick={resetOnboarding}>Đặt lại hướng dẫn ban đầu</button>
 </div>
 
 <!-- Category editor (bottom sheet) -->
@@ -485,9 +485,9 @@
 <!-- Currency picker (bottom sheet) -->
 <Dialog.Root bind:open={currencyOpen}>
 	<Dialog.Content class="gap-3">
-		<Dialog.Title>Mata uang</Dialog.Title>
+		<Dialog.Title>Đơn vị tiền tệ</Dialog.Title>
 		<Dialog.Description class="text-[13px]">
-			Dipakai untuk format seluruh nominal di aplikasi.
+			Dùng để hiển thị tất cả số tiền trong ứng dụng.
 		</Dialog.Description>
 		<div class="option-list">
 			{#each SUPPORTED_CURRENCIES as c (c)}
@@ -511,9 +511,9 @@
 <!-- Default account picker (bottom sheet) -->
 <Dialog.Root bind:open={accountOpen}>
 	<Dialog.Content class="gap-3">
-		<Dialog.Title>Akun default</Dialog.Title>
+		<Dialog.Title>Tài khoản mặc định</Dialog.Title>
 		<Dialog.Description class="text-[13px]">
-			Otomatis terpilih saat menambah catatan baru.
+			Tự động chọn khi thêm giao dịch mới.
 		</Dialog.Description>
 		<div class="option-list">
 			<button
@@ -574,7 +574,7 @@
 		margin: 16px 4px 0;
 	}
 
-	/* Profile */
+	/* Hồ sơ */
 	.profile {
 		display: flex;
 		align-items: center;
